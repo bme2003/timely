@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = '1092837465'  # C
+app.secret_key = 'secret_key'  # CHANGE ME WHEN IN DEVELOPMENT
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///timely.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
