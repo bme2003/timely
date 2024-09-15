@@ -27,7 +27,7 @@ git clone https://github.com/bme2003/timely.git
 ```
 ## 2. Install dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r reqs.txt
 ```
 ## 3. Setup Database and local instance
 ```bash
