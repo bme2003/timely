@@ -21,4 +21,15 @@ Timely is a college networking tool that allows students to create profiles base
 
 ## Getting Started
 
-
+## 1. Clone repository locally
+```bash
+git clone https://github.com/bme2003/timely.git
+```
+## 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+## 3. Setup Database and local instance
+```bash
+python app.py
+```
