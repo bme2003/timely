@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css' rel='stylesheet' />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Your Calendar</title>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js'></script>
+</head>
+<body class="bg-light">
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <!-- Sidebar for Class Groups -->
+            <div class="col-lg-3 col-md-4 col-sm-12 p-4" style="background-color: #f8f9fa; border-radius: 8px;">
+                <h4 class="text-primary mb-3">Groups</h4>
+                <ul class="list-unstyled">
+                    {% for class in classes %}
+                        <li class="mb-2">
+                            <span style="color: {{ class.color }};">&#9679;</span> {{ class.name }}
+                        </li>
+                    {% else %}
+                        <li>No classes added yet.</li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('add_class') }}" class="btn btn-secondary mt-3">Add Class</a>
+            </div>
+
+            <!-- Calendar -->
+            <div class="col-lg-9 col-md-8 col-sm-12 p-4">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3>Your Calendar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id='calendar'></div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a href="{{ url_for('add_event') }}" class="btn btn-success">Add New Event</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 600,  // Adjust height as needed
+                events: [
+                    {% for event in events %}
+                    {
+                        title: '{{ event.title }}',
+                        start: '{{ event.date.strftime('%Y-%m-%dT%H:%M:%S') }}',
+                        description: '{{ event.description }}',
+                        color: '{{ event.class.color if event.class else "#007bff" }}',
+                    },
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    alert('Event: ' + info.event.title + '\nDescription: ' + info.event.extendedProps.description);
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
