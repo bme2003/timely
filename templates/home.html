@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Home</title>
+</head>
+<body class="main-page">
+    <div class="text-center">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Timely Logo" class="logo">
+        <h1 class="title">Timely</h1>
+        <p class="subtitle">Make scheduling easier</p>
+        <p>Join today</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create an account</a>
+        <p>or</p>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Sign in</a>
+        <p class="terms">By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.</p>
+    </div>
+</body>
+</html>

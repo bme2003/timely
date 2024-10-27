@@ -1,0 +1,135 @@
+/* Background and layout for all pages */
+body {
+    background-image: url('../static/images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #333;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Title Styling */
+h1 {
+    font-family: 'Pacifico', cursive; /* Using Pacifico for the title */
+    color: #007bff; /* Primary color for the title */
+    font-size: 48px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Logo Styling */
+.logo {
+    width: 80px; /* Adjust size based on visual preference */
+    margin-bottom: 20px;
+}
+
+/* Form container styling for pages like add_class and login */
+.container {
+    background-color: rgba(255, 255, 255, 0.9); /* Light background with transparency */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: auto;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+/* Smaller color picker styling */
+.form-control-color-picker {
+    width: 50px; /* Smaller color picker for a refined look */
+    height: 30px;
+    padding: 0;
+    border: none;
+}
+
+/* Terms text styling */
+.terms {
+    font-size: 14px;
+    color: #999;
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Calendar page adjustments */
+.calendar-container {
+    background-color: #e0f2ff; /* Light blue background for the calendar */
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* Sidebar for classes */
+.sidebar {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 18px;
+}
+
+/* Group Title */
+.group-title {
+    font-weight: bold;
+    color: #007bff; /* Primary color for "Groups" label */
+    margin-bottom: 10px;
+}
+
+/* Group item styling */
+.group-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.group-item-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* Adjustments for calendar items */
+.calendar-event {
+    background-color: #007bff;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: inline-block;
+    margin: 2px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 36px;
+    }
+    .btn-primary, .btn-secondary {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
