@@ -46,7 +46,7 @@ timely/
     ├── calendar.html        # Calendar view for displaying events
     ├── add_event.html       # Form page for adding events
     └── add_class.html       # Form page for adding classes
-'''
+```
 ## Getting Started
 
 ## 1. Clone repository locally
