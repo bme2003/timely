@@ -1,6 +1,6 @@
 # Contributing
 
-The Timely repository is only to be contributed to by project members, who will make their changes in the appropriate branches and then make pull requests into the main branch. These chanegs must be reviewed by another member before merging.
+The Timely repository is only to be contributed to by project members, who will make their changes in the appropriate branches and then make pull requests into the main branch. These changes must be reviewed by another member before merging.
 
 ## Pull Request Process
 
