@@ -97,3 +97,21 @@ python app.py
 
 ### Known Issues
 - **Compatibility**: For the best experience, use an updated web browser. Some styling or interactive elements may display differently on older browsers.
+
+## Contributing
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for contributing details, as well as [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for code of conduct details.
+
+## Versioning
+Version 1.2.0
+
+## Authors
+- Brody England
+- Christian Butler
+- Dylan Hyer
+- Ian Nieto
+- Nyle Huntley
+- Sofia Mendoza
+
+## Licensing
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
