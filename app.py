@@ -16,6 +16,7 @@ app.secret_key = 'your_secret_key'
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
+
 # Define the User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,7 +29,7 @@ class Class(db.Model):
     name = db.Column(db.String(100), nullable=False)
     color = db.Column(db.String(7), default="#000000")  # Default color as black
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    events = db.relationship('Event', backref='class', lazy=True)
+    events = db.relationship('Event', back_populates='class_')
 
 # Define the Event model
 class Event(db.Model):
@@ -38,7 +39,7 @@ class Event(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True) 
-    class_ = db.relationship('Class') 
+    class_ = db.relationship('Class', back_populates='events')
 
 # Home route
 @app.route('/')
