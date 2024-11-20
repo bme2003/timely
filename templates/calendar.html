@@ -7,7 +7,17 @@
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css' rel='stylesheet' />
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Your Calendar</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js'></script>
+    <style>
+        /* Center the spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container-fluid mt-5">
@@ -27,18 +37,29 @@
                 <a href="{{ url_for('add_class') }}" class="btn btn-secondary mt-3">Add Class</a>
             </div>
 
-            <!-- Calendar -->
+            <!-- Main Calendar and Navigation -->
             <div class="col-lg-9 col-md-8 col-sm-12 p-4">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h3>Your Calendar</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Your Calendar</h2>
+                    <div>
+                        <a href="{{ url_for('profile') }}" class="btn btn-info">Profile</a>
+                        <a href="{{ url_for('match_peers') }}" class="btn btn-success">Find Classmates</a>
+                        <a href="{{ url_for('view_messages') }}" class="btn btn-secondary">Messages</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     </div>
+                </div>
+                
+                <!-- Spinner to indicate loading -->
+                <div id="spinner" class="spinner-container">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Calendar container, hidden initially -->
+                <div id="calendar-container" class="card" style="display: none;">
                     <div class="card-body">
                         <div id='calendar'></div>
-                    </div>
-                    <div class="card-footer d-flex justify-content-between">
-                        <a href="{{ url_for('add_event') }}" class="btn btn-success">Add New Event</a>
-                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     </div>
                 </div>
             </div>
@@ -48,9 +69,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
+            var spinner = document.getElementById('spinner');
+            var calendarContainer = document.getElementById('calendar-container');
+
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                height: 600,  // Adjust height as needed
+                height: 600,
                 events: [
                     {% for event in events %}
                     {
@@ -63,8 +87,19 @@
                 ],
                 eventClick: function(info) {
                     alert('Event: ' + info.event.title + '\nDescription: ' + info.event.extendedProps.description);
+                },
+                loading: function(isLoading) {
+                    // Toggle spinner visibility based on loading state
+                    if (isLoading) {
+                        spinner.style.display = 'flex';
+                        calendarContainer.style.display = 'none';
+                    } else {
+                        spinner.style.display = 'none';
+                        calendarContainer.style.display = 'block';
+                    }
                 }
             });
+
             calendar.render();
         });
     </script>

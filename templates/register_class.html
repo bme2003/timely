@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register for Classes</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Register for a Class</h2>
+        <form action="{{ url_for('register_class') }}" method="post">
+            <div class="form-group">
+                <label for="class_id">Select an Existing Class:</label>
+                <select class="form-control" id="class_id" name="class_id">
+                    <option value="">Choose a class</option>
+                    {% for class in classes %}
+                        <option value="{{ class.id }}">{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <h4>Or Add a New Class</h4>
+            <div class="form-group">
+                <label for="class_name">Class Name:</label>
+                <input type="text" class="form-control" name="class_name" id="class_name">
+            </div>
+            <div class="form-group">
+                <label for="color">Class Color:</label>
+                <input type="color" class="form-control" name="color" id="color" value="#000000">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+</body>
+</html>

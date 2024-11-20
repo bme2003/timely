@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Classes</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Your Classes</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Secret Web Name</th>
+                    <th>Class Color</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in user_classes %}
+                    <tr>
+                        <td>{{ class.secret_name }}</td>
+                        <td><span style="background-color: {{ class.color }}; padding: 5px 10px; border-radius: 5px;">&nbsp;</span></td>
+                        <td>
+                            <form action="{{ url_for('manage_classes') }}" method="post" style="display:inline;">
+                                <input type="hidden" name="class_id" value="{{ class.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center">No classes found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('register_class') }}" class="btn btn-primary">Add a Class</a>
+    </div>
+</body>
+</html>
