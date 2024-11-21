@@ -12,6 +12,7 @@
     <div class="container mt-5">
         <h2>Your Profile</h2>
         <form action="{{ url_for('profile') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="canvas_ical_url">Canvas Calendar Link:</label>
                 <input type="text" class="form-control" name="canvas_ical_url" id="canvas_ical_url" value="{{ user.canvas_ical_url or '' }}" placeholder="Enter Canvas calendar link">
