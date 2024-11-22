@@ -108,6 +108,7 @@ class Class(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     color = db.Column(db.String(7), default="#000000")
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     # Fix relationships
     students = db.relationship(
@@ -595,32 +596,41 @@ def calendar():
         return redirect(url_for('login'))
 
 @app.route('/add_class', methods=['GET', 'POST'])
+@login_required
 def add_class():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    user = User.query.get(session['user_id'])
-
-    if request.method == 'POST':
-        class_name = request.form['class_name']
-        color = request.form['color']
-        
-        # Check if the class already exists by name
-        existing_class = Class.query.filter_by(name=class_name).first()
-        
-        if existing_class:
-            # If the class exists and the user is not already registered, associate the user with it
-            if existing_class not in user.classes:
-                user.classes.append(existing_class)
-        else:
-            # If the class doesn't exist, create it and associate the user
-            new_class = Class(name=class_name, color=color)
-            user.classes.append(new_class)
-            db.session.add(new_class)
-
-        db.session.commit()
-        return redirect(url_for('calendar'))
+    user = db.session.get(User, session['user_id'])
     
+    if request.method == 'POST':
+        class_name = request.form.get('class_name')
+        class_color = request.form.get('color', '#000000')
+        
+        if not class_name:
+            flash('Class name is required', 'error')
+            return redirect(url_for('add_class'))
+            
+        try:
+            # Check for duplicate class names for this user
+            existing_class = next((c for c in user.classes if c.name.lower() == class_name.lower()), None)
+            if existing_class:
+                flash('You already have a class with this name', 'error')
+                return redirect(url_for('add_class'))
+
+            new_class = Class(
+                name=class_name,
+                color=class_color
+            )
+            db.session.add(new_class)
+            user.classes.append(new_class)
+            db.session.commit()
+            flash('Class added successfully!', 'success')
+            return redirect(url_for('manage_classes'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error adding class: {str(e)}")
+            flash('Error adding class. Please try again.', 'error')
+            return redirect(url_for('add_class'))
+            
     return render_template('add_class.html')
 
 
