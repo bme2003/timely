@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Recommendations</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-custom">
+    <div class="container mt-4">
+        <h2><i class="fas fa-lightbulb"></i> Personalized Study Recommendations</h2>
+        
+        <!-- AI Study Tips -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">AI-Powered Study Tips</h5>
+                        <div class="tips-container">
+                            {% for tip in study_tips %}
+                            <div class="tip-card mb-2">
+                                <i class="fas fa-star text-warning"></i>
+                                {{ tip }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="getSpecificTip()">
+                            Get Specific Tip
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Recommendations -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Recommended Study Schedule</h5>
+                        <div class="schedule-container">
+                            {% for slot in recommendations.schedule %}
+                            <div class="schedule-slot">
+                                <div class="time">{{ slot.time }}</div>
+                                <div class="subject">{{ slot.subject }}</div>
+                                <div class="duration">{{ slot.duration }} minutes</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Study Techniques -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Recommended Study Techniques</h5>
+                        <div class="techniques-container">
+                            {% for technique in recommendations.techniques %}
+                            <div class="technique-card">
+                                <h6>{{ technique.name }}</h6>
+                                <p>{{ technique.description }}</p>
+                                <div class="effectiveness">
+                                    Effectiveness: 
+                                    {% for _ in range(technique.effectiveness) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Recommendations -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Recommended Resources</h5>
+                        <div class="row">
+                            {% for resource in resources %}
+                            <div class="col-md-4 mb-3">
+                                <div class="resource-card">
+                                    <h6>{{ resource.title }}</h6>
+                                    <p>{{ resource.description }}</p>
+                                    <div class="resource-meta">
+                                        <span><i class="fas fa-thumbs-up"></i> {{ resource.likes }}</span>
+                                        <span><i class="fas fa-download"></i> {{ resource.downloads }}</span>
+                                    </div>
+                                    <a href="{{ resource.url }}" class="btn btn-primary btn-sm mt-2">
+                                        View Resource
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getSpecificTip() {
+            const topic = prompt('What topic would you like a tip for?');
+            const difficulty = prompt('What difficulty level? (beginner/intermediate/advanced)');
+            
+            if (topic && difficulty) {
+                fetch('/api/study_tip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ topic, difficulty })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.tip);
+                });
+            }
+        }
+
+        function trackStudySession(data) {
+            fetch('/track_study_analytics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Handle success
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

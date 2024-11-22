@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamification Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-custom">
+    <div class="container mt-4">
+        <div class="row">
+            <!-- User Stats -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3>Level {{ stats.current_level }}</h3>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (stats.total_points % 1000) / 10 }}%">
+                                {{ stats.total_points }} points
+                            </div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <i class="fas fa-fire"></i>
+                                <span>{{ stats.study_streak }} day streak</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-share-alt"></i>
+                                <span>{{ stats.resources_shared }} resources</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-star"></i>
+                                <span>{{ stats.reviews_given }} reviews</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Earned Badges</h4>
+                        <div class="badges-grid">
+                            {% for user_badge in badges %}
+                            <div class="badge-item">
+                                <i class="fas fa-{{ user_badge.badge.icon }} fa-2x"></i>
+                                <h5>{{ user_badge.badge.name }}</h5>
+                                <p>{{ user_badge.badge.description }}</p>
+                                <small>Earned {{ user_badge.earned_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Leaderboard</h4>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>User</th>
+                                    <th>Level</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i, stat in enumerate(leaderboard, 1) %}
+                                <tr {% if stat.user_id == user.id %}class="table-primary"{% endif %}>
+                                    <td>{{ i }}</td>
+                                    <td>{{ stat.user.username }}</td>
+                                    <td>{{ stat.current_level }}</td>
+                                    <td>{{ stat.total_points }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ class_.name }} Resources</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>{{ class_.name }} Resources</h2>
+        
+        <div class="row mt-4">
+            <div class="col-md-8">
+                {% if resources %}
+                    {% for resource in resources %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ resource.title }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">Type: {{ resource.resource_type }}</h6>
+                                {% if resource.url %}
+                                    <a href="{{ resource.url }}" class="card-link" target="_blank">View Resource</a>
+                                {% endif %}
+                                {% if resource.notes %}
+                                    <p class="card-text">{{ resource.notes }}</p>
+                                {% endif %}
+                                <small class="text-muted">Shared by: {{ User.query.get(resource.shared_by).username }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No resources shared yet.</p>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Share a Resource</h5>
+                        <form id="resourceForm">
+                            <input type="hidden" name="class_id" value="{{ class_.id }}">
+                            <div class="mb-3">
+                                <label>Title</label>
+                                <input type="text" class="form-control" name="title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label>Type</label>
+                                <select class="form-control" name="type">
+                                    <option value="textbook">Textbook</option>
+                                    <option value="website">Website</option>
+                                    <option value="video">Video</option>
+                                    <option value="notes">Notes</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>URL (optional)</label>
+                                <input type="url" class="form-control" name="url">
+                            </div>
+                            <div class="mb-3">
+                                <label>Notes (optional)</label>
+                                <textarea class="form-control" name="notes"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Share Resource</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+    document.getElementById('resourceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {
+            class_id: formData.get('class_id'),
+            title: formData.get('title'),
+            type: formData.get('type'),
+            url: formData.get('url'),
+            notes: formData.get('notes')
+        };
+
+        fetch('/share_resource', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Resource shared successfully!');
+                location.reload();  // Refresh to show new resource
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to share resource. Please try again.');
+        });
+    });
+    </script>
+</body>
+</html> 

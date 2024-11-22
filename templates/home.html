@@ -1,22 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Home</title>
-</head>
-<body class="main-page">
-    <div class="text-center">
-        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Timely Logo" class="logo">
-        <h1 class="title">Timely</h1>
-        <p class="subtitle">Make scheduling easier</p>
-        <p>Join today</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create an account</a>
-        <p>or</p>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Sign in</a>
-        <p class="terms">By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.</p>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Quick Actions Card -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('calendar') }}" class="btn btn-primary btn-block mb-2">
+                        <i class="fas fa-calendar"></i> View Calendar
+                    </a>
+                    <a href="{{ url_for('manage_classes') }}" class="btn btn-info btn-block">
+                        <i class="fas fa-book"></i> Manage Classes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Peers Card -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Your Classmates</h5>
+                </div>
+                <div class="card-body">
+                    {% if matched_peers %}
+                        {% for class_name, peers in matched_peers.items() %}
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h3>{{ class_name }}</h3>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    {% for peer in peers %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ peer.username }}</strong>
+                                                {% if peer in user.friends %}
+                                                    <span class="badge badge-success ml-2">Friend</span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                {% if peer.id != user.id %}
+                                                    {% if peer not in user.friends %}
+                                                        <button onclick="connectWithPeer({{ peer.id }})" 
+                                                                class="btn btn-outline-primary btn-sm">
+                                                            Connect
+                                                        </button>
+                                                    {% else %}
+                                                        <a href="{{ url_for('messages', recipient_id=peer.id) }}" 
+                                                           class="btn btn-primary btn-sm">Message</a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </li>
+                                    {% else %}
+                                        <li class="list-group-item text-center">No classmates found</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">No classmates found yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+function connectWithPeer(peerId) {
+    const button = event.target;
+    
+    // Get CSRF token from meta tag
+    const csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/connect_with_peer/${peerId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrf_token
+        },
+        body: JSON.stringify({
+            csrf_token: csrf_token
+        }),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update button appearance
+            button.innerHTML = 'Request Sent';
+            button.disabled = true;
+            button.classList.remove('btn-outline-primary');
+            button.classList.add('btn-secondary');
+            
+            // Show success message
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            Toast.fire({
+                icon: 'success',
+                title: 'Connection request sent!'
+            });
+        } else {
+            // Show error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.message || 'Something went wrong!'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'An error occurred while sending the request'
+        });
+    });
+}
+</script>
+
+<!-- Add SweetAlert2 for better notifications -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+.btn-outline-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.connection-pending {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+</style>
+{% endblock %}

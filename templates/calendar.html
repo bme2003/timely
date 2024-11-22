@@ -3,105 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Timely - Your Study Calendar</title>
+    
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css' rel='stylesheet' />
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Your Calendar</title>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js'></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
     <style>
-        /* Center the spinner */
-        .spinner-container {
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .class-card {
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        #calendar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .smart-schedule {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .fc-event {
+            border: none !important;
+            padding: 3px 8px !important;
+            margin: 2px !important;
+            border-radius: 4px !important;
+        }
+
+        /* Assignment events */
+        .event-assignment {
+            background-color: rgba(220, 53, 69, 0.9) !important;
+            color: white !important;
+            border-left: 4px solid #b21f2d !important;
+        }
+
+        /* Study session events */
+        .event-study_session {
+            background-color: rgba(40, 167, 69, 0.9) !important;
+            color: white !important;
+            border-left: 4px solid #1e7e34 !important;
+        }
+
+        /* Canvas events */
+        .event-canvas_event {
+            background-color: rgba(0, 123, 255, 0.9) !important;
+            color: white !important;
+            border-left: 4px solid #0056b3 !important;
+        }
+
+        /* Add hover effect */
+        .fc-event:hover {
+            filter: brightness(110%);
+            cursor: pointer;
+        }
+
+        /* Add legend */
+        .calendar-legend {
             display: flex;
-            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
             align-items: center;
-            height: 100vh;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container-fluid mt-5">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <div class="navbar-nav ml-auto">
+            <a class="nav-link" href="{{ url_for('profile') }}">
+                <i class="fas fa-cog"></i> Canvas Settings
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
         <div class="row">
-            <!-- Sidebar for Class Groups -->
-            <div class="col-lg-3 col-md-4 col-sm-12 p-4" style="background-color: #f8f9fa; border-radius: 8px;">
-                <h4 class="text-primary mb-3">Groups</h4>
-                <ul class="list-unstyled">
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h4><i class="fas fa-book"></i> Your Classes</h4>
                     {% for class in classes %}
-                        <li class="mb-2">
-                            <span style="color: {{ class.color }};">&#9679;</span> {{ class.name }}
-                        </li>
-                    {% else %}
-                        <li>No classes added yet.</li>
+                    <div class="class-card">
+                        <h5>
+                            <span style="color: {{ class.color }};">●</span> 
+                            {{ class.name }}
+                        </h5>
+                        <div class="btn-group w-100 mb-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="createStudyGroup('{{ class.id }}')">
+                                <i class="fas fa-users"></i> Study Group
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="viewResources('{{ class.id }}')">
+                                <i class="fas fa-book"></i> Resources
+                            </button>
+                        </div>
+                        <div class="classmates-section">
+                            <select class="form-control form-control-sm" onchange="filterClassmates(this.value, '{{ class.id }}')">
+                                <option value="">View Classmates</option>
+                                {% for classmate in classmates_by_class[class.id] %}
+                                    <option value="{{ classmate.id }}">{{ classmate.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     {% endfor %}
-                </ul>
-                <a href="{{ url_for('add_class') }}" class="btn btn-secondary mt-3">Add Class</a>
+                    
+                    <div class="smart-schedule">
+                        <h4><i class="fas fa-brain"></i> Smart Schedule</h4>
+                        <button class="btn btn-success btn-block mb-2" onclick="generateSmartSchedule()">
+                            <i class="fas fa-magic"></i> Generate Study Plan
+                        </button>
+                        
+                        {% if show_canvas_import %}
+                        <button class="btn btn-info btn-block" onclick="importCanvasEvents()">
+                            <i class="fas fa-download"></i> Import Canvas Events
+                        </button>
+                        {% else %}
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-info btn-block">
+                            <i class="fas fa-link"></i> Connect Canvas Calendar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
-            <!-- Main Calendar and Navigation -->
-            <div class="col-lg-9 col-md-8 col-sm-12 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Your Calendar</h2>
-                    <div>
-                        <a href="{{ url_for('profile') }}" class="btn btn-info">Profile</a>
-                        <a href="{{ url_for('match_peers') }}" class="btn btn-success">Find Classmates</a>
-                        <a href="{{ url_for('view_messages') }}" class="btn btn-secondary">Messages</a>
-                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-                    </div>
-                </div>
-                
-                <!-- Spinner to indicate loading -->
-                <div id="spinner" class="spinner-container">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
-                </div>
+            <div class="col-md-9">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Calendar container, hidden initially -->
-                <div id="calendar-container" class="card" style="display: none;">
-                    <div class="card-body">
-                        <div id='calendar'></div>
-                    </div>
+    <div class="modal fade" id="addEventModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Study Session</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEventForm">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" name="description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Class</label>
+                            <select class="form-control" name="class_id">
+                                {% for class in classes %}
+                                <option value="{{ class.id }}">{{ class.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Event</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js'></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
-            var spinner = document.getElementById('spinner');
-            var calendarContainer = document.getElementById('calendar-container');
-
+            
+            // Add legend before calendar
+            const legendHtml = `
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(220, 53, 69, 0.9);"></div>
+                        <span>Assignments</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(40, 167, 69, 0.9);"></div>
+                        <span>Study Sessions</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(0, 123, 255, 0.9);"></div>
+                        <span>Canvas Events</span>
+                    </div>
+                </div>
+            `;
+            calendarEl.insertAdjacentHTML('beforebegin', legendHtml);
+            
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                height: 600,
-                events: [
-                    {% for event in events %}
-                    {
-                        title: '{{ event.title }}',
-                        start: '{{ event.date.strftime('%Y-%m-%dT%H:%M:%S') }}',
-                        description: '{{ event.description }}',
-                        color: '{{ event.class.color if event.class else "#007bff" }}',
-                    },
-                    {% endfor %}
-                ],
-                eventClick: function(info) {
-                    alert('Event: ' + info.event.title + '\nDescription: ' + info.event.extendedProps.description);
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                loading: function(isLoading) {
-                    // Toggle spinner visibility based on loading state
-                    if (isLoading) {
-                        spinner.style.display = 'flex';
-                        calendarContainer.style.display = 'none';
-                    } else {
-                        spinner.style.display = 'none';
-                        calendarContainer.style.display = 'block';
-                    }
+                events: '/calendar/events',
+                selectable: true,
+                select: function(info) {
+                    $('#addEventModal').modal('show');
+                },
+                eventDidMount: function(info) {
+                    // Add class based on event type
+                    info.el.classList.add(`event-${info.event.extendedProps.type}`);
+                    
+                    // Add tooltip
+                    $(info.el).tooltip({
+                        title: info.event.title + (info.event.extendedProps.description ? '\n' + info.event.extendedProps.description : ''),
+                        placement: 'top',
+                        container: 'body'
+                    });
                 }
             });
-
             calendar.render();
+            
+            // Store calendar instance globally
+            window.calendar = calendar;
         });
+
+        function createStudyGroup(classId) {
+            window.location.href = `/study_groups/${classId}`;
+        }
+
+        function viewResources(classId) {
+            window.location.href = `/class_resources/${classId}`;
+        }
+
+        function generateSmartSchedule() {
+            fetch('/generate_smart_schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    calendar.refetchEvents();
+                    showAlert('success', data.message);
+                } else {
+                    showAlert('error', data.message || 'Failed to generate study schedule');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'An error occurred while generating the study schedule');
+            });
+        }
+
+        function importCanvasEvents() {
+            // Show loading indicator
+            const importBtn = document.querySelector('.btn-info');
+            const originalText = importBtn.innerHTML;
+            importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+            importBtn.disabled = true;
+
+            fetch('/import_canvas_events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    calendar.refetchEvents();
+                    showAlert('success', data.message);
+                } else {
+                    if (data.message.includes('No Canvas URL')) {
+                        window.location.href = '/profile';  // Redirect to profile page
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Import error:', error);
+                showAlert('error', 'An error occurred during import. Please try again.');
+            })
+            .finally(() => {
+                // Restore button state
+                importBtn.innerHTML = originalText;
+                importBtn.disabled = false;
+            });
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            `;
+            document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
     </script>
 </body>
 </html>
