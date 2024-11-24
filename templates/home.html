@@ -74,21 +74,13 @@
 <script>
 function connectWithPeer(peerId) {
     const button = event.target;
-    
-    // Get CSRF token from meta tag
-    const csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
+
     fetch(`/connect_with_peer/${peerId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': csrf_token
-        },
-        body: JSON.stringify({
-            csrf_token: csrf_token
-        }),
-        credentials: 'same-origin'
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
     .then(response => {
         if (!response.ok) {
