@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Messages{% endblock %}
@@ -120,7 +121,6 @@
                             {% endfor %}
                         </div>
                         <form method="POST" action="{{ url_for('messages', recipient_id=selected_recipient.id) }}" class="message-input">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <div class="input-group">
                                 <input type="text" name="content" class="form-control" placeholder="Type a message..." required>
                                 <div class="input-group-append">
@@ -176,13 +176,11 @@ function loadChat(contactId) {
 }
 
 function sendMessage(content) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
     fetch('/api/messages/send', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
         },
         body: JSON.stringify({
             recipient_id: currentChatId,
@@ -228,7 +226,6 @@ function acceptConnection(requestId) {
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
         }
     })
     .then(response => response.json())
