@@ -111,8 +111,7 @@
             fetch(`/join_study_group/${groupId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'Content-Type': 'application/json'
                 }
             })
             .then(response => response.json())
@@ -134,8 +133,7 @@
             fetch('/create_study_group', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(Object.fromEntries(formData))
             })
@@ -148,4 +146,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
