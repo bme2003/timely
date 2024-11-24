@@ -44,8 +44,6 @@ load_dotenv()
 
 # Initialize the Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(16))
-csrf = CSRFProtect(app)
 
 # Initialize the cache with Flask
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
