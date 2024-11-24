@@ -107,7 +107,6 @@
             </div>
             <div class="modal-body">
                 <form id="addResourceForm" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <div class="form-group">
                         <label>Class</label>
@@ -164,9 +163,6 @@ document.getElementById('addResourceForm').addEventListener('submit', async func
     try {
         const response = await fetch('/share_resource', {
             method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
             body: formData
         });
         
@@ -206,4 +202,4 @@ document.getElementById('filterForm').addEventListener('submit', async function(
     }
 });
 </script>
-{% endblock %} 
+{% endblock %}
