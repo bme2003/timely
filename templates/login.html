@@ -44,7 +44,6 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('login') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Username</label>
                     <input type="text" class="form-control" name="username" required>
