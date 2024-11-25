@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Analytics</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-custom">
+    <div class="container mt-4">
+        <h2><i class="fas fa-chart-line"></i> Study Analytics</h2>
+        
+        <!-- Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Study Hours</h5>
+                        <h2>{{ study_patterns.total_hours|round(1) }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Average Session</h5>
+                        <h2>{{ study_patterns.average_session_length|round }} min</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Best Study Time</h5>
+                        <h2>{{ study_patterns.most_productive_time }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Productivity Score</h5>
+                        <h2>{{ productivity_trends.improvement_rate|round(1) }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productivity Chart -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Weekly Productivity Trends</h5>
+                        <canvas id="productivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Optimal Study Times</h5>
+                        <ul class="list-group">
+                            {% for time in optimal_times %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ time.day_name }} at {{ time.hour }}:00
+                                <span class="badge badge-primary badge-pill">
+                                    {{ time.predicted_productivity|round(2) }}
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Techniques Analysis -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Most Effective Study Techniques</h5>
+                        <canvas id="techniquesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Favorite Study Locations</h5>
+                        <canvas id="locationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts
+        const productivityCtx = document.getElementById('productivityChart').getContext('2d');
+        const techniquesCtx = document.getElementById('techniquesChart').getContext('2d');
+        const locationsCtx = document.getElementById('locationsChart').getContext('2d');
+
+        // Weekly Productivity Chart
+        new Chart(productivityCtx, {
+            type: 'line',
+            data: {
+                labels: {{ productivity_trends.weekly_averages.keys()|list|tojson }},
+                datasets: [{
+                    label: 'Weekly Productivity',
+                    data: {{ productivity_trends.weekly_averages.values()|list|tojson }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+
+        // Study Techniques Chart
+        new Chart(techniquesCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ study_patterns.best_techniques.keys()|list|tojson }},
+                datasets: [{
+                    label: 'Average Productivity',
+                    data: {{ study_patterns.best_techniques.values()|list|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            }
+        });
+
+        // Study Locations Chart
+        new Chart(locationsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ study_patterns.favorite_locations.keys()|list|tojson }},
+                datasets: [{
+                    data: {{ study_patterns.favorite_locations.values()|list|tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)'
+                    ]
+                }]
+            }
+        });
+    </script>
+</body>
+</html> 

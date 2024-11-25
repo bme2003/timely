@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Your Profile</h2>
+        <form action="{{ url_for('profile') }}" method="post">
+            <div class="form-group">
+                <label for="canvas_ical_url">Canvas Calendar Link:</label>
+                <input type="text" class="form-control" name="canvas_ical_url" id="canvas_ical_url" value="{{ user.canvas_ical_url or '' }}" placeholder="Enter Canvas calendar link">
+                <button type="button" class="btn btn-info mt-2" data-bs-toggle="modal" data-bs-target="#helpModal">How to Get Link?</button>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Update Profile</button>
+        </form>
+        
+        <!-- Back to Calendar Button -->
+        <a href="{{ url_for('calendar') }}" class="btn btn-secondary mt-3">Back to Calendar</a>
+
+        <!-- Help Modal -->
+        <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="helpModalLabel">How to Get Canvas Calendar Link</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>To add your Canvas calendar link:</p>
+                        <ol>
+                            <li>Log into Canvas.</li>
+                            <li>Go to "Calendar" in the global navigation on the left.</li>
+                            <li>Click on "Calendar Feed" (usually on the bottom right).</li>
+                            <li>Copy the provided link.</li>
+                            <li>Paste it here to sync your Canvas calendar.</li>
+                        </ol>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

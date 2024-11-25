@@ -2,34 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Add Class</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-custom"> 
+<body>
     <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card p-4 shadow-sm">
-                    <h3 class="text-center mb-4">Add a New Class</h3>
-                    <form action="{{ url_for('add_class') }}" method="post">
-                        <div class="form-group">
-                            <label for="class_name">Class Name</label>
-                            <input type="text" class="form-control" id="class_name" name="class_name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="color">Class Color</label>
-                            <input type="color" class="form-control-color-picker" id="color" name="color" value="#007bff">
-                        </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">Add Class</button>
-                            <a href="{{ url_for('calendar') }}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
+        <h2>Add or Join a Class</h2>
+        <form action="{{ url_for('add_class') }}" method="post">
+            <div class="form-group">
+                <label for="class_name">Class Name:</label>
+                <input type="text" class="form-control" name="class_name" id="class_name" required>
             </div>
-        </div>
+            <div class="form-group">
+                <label for="color">Class Color:</label>
+                <input type="color" class="form-control" name="color" id="color" value="#000000">
+            </div>
+            <button type="submit" class="btn btn-primary">Add/Join Class</button>
+        </form>
     </div>
 </body>
 </html>
