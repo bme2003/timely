@@ -43,3 +43,79 @@ with students' existing workflows, enabling better collaboration and time manage
 - Determine if users can easily navigate the app and complete tasks.
 - Identify usability issues or areas for improvement.
 - Validate that the implemented features align with initial goals and user expectations.
+
+
+# User Evaluation Results and Reflections
+
+## Results
+
+**User 1:**
+- **Task Completion Times:**
+  - Create account and set up profile: _[Enter time]_
+  - Import schedule: _[Enter time]_
+  - Find and create a meeting: _[Enter time]_
+  - Manage tasks and set notifications: _[Enter time]_
+  - Navigate calendar: _[Enter time]_
+- **Success Rate:** _[Yes/No or %]_  
+- **Feedback:**
+  - Homepage description: _[User’s response]_
+  - Ease of schedule import: _[User’s response]_
+  - Missing or unnecessary features: _[User’s response]_
+- **Ratings (Scale of 1-10):**
+  - Layout: _[Enter rating]_
+  - Ease of meeting creation: _[Enter rating]_
+  - Likelihood of future use: _[Enter rating]_
+
+**User 2:**
+- **Task Completion Times:**
+  - Create account and set up profile: _[Enter time]_
+  - Import schedule: _[Enter time]_
+  - Find and create a meeting: _[Enter time]_
+  - Manage tasks and set notifications: _[Enter time]_
+  - Navigate calendar: _[Enter time]_
+- **Success Rate:** _[Yes/No or %]_  
+- **Feedback:**
+  - Homepage description: _[User’s response]_
+  - Ease of schedule import: _[User’s response]_
+  - Missing or unnecessary features: _[User’s response]_
+- **Ratings (Scale of 1-10):**
+  - Layout: _[Enter rating]_
+  - Ease of meeting creation: _[Enter rating]_
+  - Likelihood of future use: _[Enter rating]_
+
+**User 3:**
+- **Task Completion Times:**
+  - Create account and set up profile: _[Enter time]_
+  - Import schedule: _[Enter time]_
+  - Find and create a meeting: _[Enter time]_
+  - Manage tasks and set notifications: _[Enter time]_
+  - Navigate calendar: _[Enter time]_
+- **Success Rate:** _[Yes/No or %]_  
+- **Feedback:**
+  - Homepage description: _[User’s response]_
+  - Ease of schedule import: _[User’s response]_
+  - Missing or unnecessary features: _[User’s response]_
+- **Ratings (Scale of 1-10):**
+  - Layout: _[Enter rating]_
+  - Ease of meeting creation: _[Enter rating]_
+  - Likelihood of future use: _[Enter rating]_
+
+---
+
+## Reflections
+
+**What Worked Well:**
+- _[Summarize features or tasks users found intuitive or satisfying, based on observations and feedback.]_
+
+**Areas for Improvement:**
+- _[Summarize challenges users faced, features that need refinement, or usability issues.]_
+
+**Learning Curve:**
+- _[Describe whether users found the system easy to learn and navigate or if it required additional guidance.]_
+
+**Task Performance:**
+- _[Reflect on whether users performed tasks as expected, and whether their actions led to the intended outcomes.]_
+
+**User Preferences:**
+- What did the users like the most? _[Summarize positive aspects users highlighted.]_
+- Was the value proposition accomplished? _[Reflect on whether the system meets its intended purpose based on user feedback.]_
