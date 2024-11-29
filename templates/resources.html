@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Resources{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-book"></i> Study Resources</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <button class="btn btn-primary" onclick="showAddResourceModal()">
+            <i class="fas fa-plus"></i> Share Resource
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5>Filters</h5>
+            </div>
+            <div class="card-body">
+                <form id="filterForm">
+                    <div class="form-group">
+                        <label>Class</label>
+                        <select class="form-control" name="class_id">
+                            <option value="">All Classes</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}">{{ class.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Resource Type</label>
+                        <select class="form-control" name="type">
+                            <option value="">All Types</option>
+                            <option value="notes">Notes</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="study_guide">Study Guide</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sort By</label>
+                        <select class="form-control" name="sort">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="title">Title A-Z</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources List -->
+    <div class="col-md-9">
+        {% if resources %}
+            <div class="row" id="resourcesList">
+                {% for resource in resources %}
+                <div class="col-md-6 mb-4">
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ resource.title }}</h5>
+                            {% if resource.notes %}
+                                <p class="card-text">{{ resource.notes }}</p>
+                            {% endif %}
+                            <div class="resource-meta mb-2">
+                                <span class="badge badge-primary">{{ resource.resource_type }}</span>
+                                <small class="text-muted ml-2">
+                                    Shared {{ resource.created_at.strftime('%Y-%m-%d') }}
+                                </small>
+                            </div>
+                            <div class="btn-group">
+                                <a href="{{ resource.url }}" class="btn btn-primary btn-sm" target="_blank">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No resources have been shared yet.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Resource Modal -->
+<div class="modal fade" id="addResourceModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Resource</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addResourceForm" enctype="multipart/form-data">
+                    
+                    <div class="form-group">
+                        <label>Class</label>
+                        <select class="form-control" name="class_id" required>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}">{{ class.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select class="form-control" name="type" required>
+                            <option value="notes">Notes</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="study_guide">Study Guide</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>File</label>
+                        <input type="file" class="form-control-file" name="file" required>
+                        <small class="text-muted">Allowed files: PDF, DOC, DOCX, TXT, PNG, JPG</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes (optional)</label>
+                        <textarea class="form-control" name="notes"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Share Resource</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showAddResourceModal() {
+    $('#addResourceModal').modal('show');
+}
+
+document.getElementById('addResourceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/share_resource', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            $('#addResourceModal').modal('hide');
+            location.reload();
+        } else {
+            alert(result.error || 'Failed to upload resource');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to upload resource');
+    }
+});
+
+// Add filter functionality
+document.getElementById('filterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    
+    try {
+        const response = await fetch(`/resources?${params.toString()}`);
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newResourcesList = doc.getElementById('resourcesList');
+        
+        if (newResourcesList) {
+            document.getElementById('resourcesList').innerHTML = newResourcesList.innerHTML;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to apply filters');
+    }
+});
+</script>
+{% endblock %}

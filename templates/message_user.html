@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Message {{ recipient.secret_username }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card p-3">
+            <a href="{{ url_for('view_messages') }}" class="btn btn-secondary mb-3">Back to Messages</a>
+            <h2>Message {{ recipient.secret_username }}</h2>
+            <form action="{{ url_for('message_user', recipient_id=recipient.id) }}" method="post">
+                <div class="form-group">
+                    <label for="content">Message:</label>
+                    <textarea class="form-control" name="content" id="content" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
