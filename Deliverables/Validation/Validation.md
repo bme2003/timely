@@ -19,8 +19,7 @@ with students' existing workflows, enabling better collaboration and time manage
 **Tasks for Users:**
 1. Create an account and set up a user profile, including major and class schedules.
 2. Import your class schedule from Canvas or manually input your availability.
-3. Use the system to find and create a meeting with classmates based on shared availability.
-4. Navigate the calendar to view individual and group schedules.
+3. Navigate the calendar to view individual and group schedules.
 
 **Data Collected:**
 - Time taken to complete each task.
@@ -49,73 +48,67 @@ with students' existing workflows, enabling better collaboration and time manage
 
 ## Results
 
-**User 1:**
+**User 1: Niko Oneill**
 - **Task Completion Times:**
-  - Create account and set up profile: _[Enter time]_
-  - Import schedule: _[Enter time]_
-  - Find and create a meeting: _[Enter time]_
-  - Manage tasks and set notifications: _[Enter time]_
-  - Navigate calendar: _[Enter time]_
-- **Success Rate:** _[Yes/No or %]_  
+  - Create account and set up profile: 2 minutes.
+  - Import schedule: 1 minute.
+  - Navigate calendar: 3 minutes.
+- **Success Rate:** 100%  
 - **Feedback:**
-  - Homepage description: _[User’s response]_
-  - Ease of schedule import: _[User’s response]_
-  - Missing or unnecessary features: _[User’s response]_
+  - Homepage description: "I really like the layout, it is a good and simple design and makes it easy to see my classes and groups."
+  - Ease of schedule import: "Importing my schedule is really easy."
+  - Missing or unnecessary features: "I wish the ability to see your classmates in your class worked as intended, beyond that it is a great product."
 - **Ratings (Scale of 1-10):**
-  - Layout: _[Enter rating]_
-  - Ease of meeting creation: _[Enter rating]_
-  - Likelihood of future use: _[Enter rating]_
+  - Layout: 9
+  - Ease of calendar creation: 10
+  - Likelihood of future use: 6
 
-**User 2:**
+**User 2: Kyle McLiverty**
 - **Task Completion Times:**
-  - Create account and set up profile: _[Enter time]_
-  - Import schedule: _[Enter time]_
-  - Find and create a meeting: _[Enter time]_
-  - Manage tasks and set notifications: _[Enter time]_
-  - Navigate calendar: _[Enter time]_
-- **Success Rate:** _[Yes/No or %]_  
+  - Create account and set up profile: 2 minutes.
+  - Import schedule: 2 minutes.
+  - Navigate calendar: 1 minute.
+- **Success Rate:** 100%  
 - **Feedback:**
-  - Homepage description: _[User’s response]_
-  - Ease of schedule import: _[User’s response]_
-  - Missing or unnecessary features: _[User’s response]_
+  - Homepage description: "I like the themes and navigation, but it is kind of hard to tell what class is what and the pages seem to change themes outside of the calendar."
+  - Ease of schedule import: "Importing my schedule was pretty easy, takes a minute to load but it works."
+  - Missing or unnecessary features: "I dont think there is much missing or unneccessary about it."
 - **Ratings (Scale of 1-10):**
-  - Layout: _[Enter rating]_
-  - Ease of meeting creation: _[Enter rating]_
-  - Likelihood of future use: _[Enter rating]_
+  - Layout: 7
+  - Ease of calendar creation: 9
+  - Likelihood of future use: 7
 
-**User 3:**
+**User 3: Kyrra Bruner**
 - **Task Completion Times:**
-  - Create account and set up profile: _[Enter time]_
-  - Import schedule: _[Enter time]_
-  - Find and create a meeting: _[Enter time]_
-  - Manage tasks and set notifications: _[Enter time]_
-  - Navigate calendar: _[Enter time]_
-- **Success Rate:** _[Yes/No or %]_  
+  - Create account and set up profile: 1 minute.
+  - Import schedule: Less than 1 minute.
+  - Navigate calendar: 2 minutes.
+- **Success Rate:** 100%
 - **Feedback:**
-  - Homepage description: _[User’s response]_
-  - Ease of schedule import: _[User’s response]_
-  - Missing or unnecessary features: _[User’s response]_
+  - Homepage description: "The design is nice, but kind of inconsistent and hard to follow, especially from the calendar view."
+  - Ease of schedule import: "The canvas calendar importing thing works really well, it also labeled and created my classes automatically which was really cool."
+  - Missing or unnecessary features: "I wish there was an ability to easily connect/follow people you know and message back and forth, or maybe a search function to find other classes."
 - **Ratings (Scale of 1-10):**
-  - Layout: _[Enter rating]_
-  - Ease of meeting creation: _[Enter rating]_
-  - Likelihood of future use: _[Enter rating]_
+  - Layout: 7
+  - Ease of calendar creation: 10
+  - Likelihood of future use: 3
 
 ---
 
 ## Reflections
 
 **What Worked Well:**
-- _[Summarize features or tasks users found intuitive or satisfying, based on observations and feedback.]_
+Users overall really enjoyed the easability to import their canvas calendars into the application and view them by class, as for every user interviewed they were able to import it and navigate it afterward, matching it to the Canvas counterpart. 
 
 **Areas for Improvement:**
-- _[Summarize challenges users faced, features that need refinement, or usability issues.]_
+The design was a little lack luster to users, namely users had issues navigating from the calendar view but once they understood the layout they were able to use the product effectively.
 
 **Learning Curve:**
-- _[Describe whether users found the system easy to learn and navigate or if it required additional guidance.]_
+Users required little to no guidance with the product, once I had them signed in and using the product they were able to get the majority of it down themselves.
 
 **Task Performance:**
-- _[Reflect on whether users performed tasks as expected, and whether their actions led to the intended outcomes.]_
+Every task I had the user's operate worked as intended, one of the users calendars took a long time to import however which worried them, which I believe was simply due to the amount of content in their calendar.
 
 **User Preferences:**
-- What did the users like the most? _[Summarize positive aspects users highlighted.]_
-- Was the value proposition accomplished? _[Reflect on whether the system meets its intended purpose based on user feedback.]_
+- What did the users like the most? They really liked the ability to import the calendar from canvas, the instructions and usability were very simple and easy to follow.
+- Was the value proposition accomplished? It was, as users felt sastified with what they were told the product does and were able to complete every task successfully.
