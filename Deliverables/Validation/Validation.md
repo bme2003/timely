@@ -63,6 +63,7 @@ with students' existing workflows, enabling better collaboration and time manage
   - Ease of calendar creation: 10
   - Likelihood of future use: 6
 
+
 **User 2: Kyle McLiverty**
 - **Task Completion Times:**
   - Create account and set up profile: 2 minutes.
@@ -77,6 +78,7 @@ with students' existing workflows, enabling better collaboration and time manage
   - Layout: 7
   - Ease of calendar creation: 9
   - Likelihood of future use: 7
+
 
 **User 3: Kyrra Bruner**
 - **Task Completion Times:**
