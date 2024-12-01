@@ -111,4 +111,4 @@ Every task I had the user's operate worked as intended, one of the users calenda
 
 **User Preferences:**
 - What did the users like the most? They really liked the ability to import the calendar from canvas, the instructions and usability were very simple and easy to follow.
-- Was the value proposition accomplished? It was, as users felt sastified with what they were told the product does and were able to complete every task successfully.
+- Was the value proposition accomplished? It was, as users felt sastified with what they were told the product does and were able to complete every task successfully. Many users felt on the fence about using the product again however, as they already have calendar tools and find it easy enough to locate and connect with memebers in their courses.
