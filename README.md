@@ -110,7 +110,6 @@ Version 1.2.0
 - Dylan Hyer
 - Ian Nieto
 - Nyle Huntley
-- Sofia Mendoza
 
 ## Licensing
 
