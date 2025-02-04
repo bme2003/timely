@@ -1,5 +1,5 @@
 from flask import Flask
-from extensions import db, migrate, csrf
+from extensions import db, migrate
 from models import User
 import os
 import secrets
@@ -26,7 +26,6 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    csrf.init_app(app)
 
     socketio = init_socketio(app)
 

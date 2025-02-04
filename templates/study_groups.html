@@ -44,7 +44,6 @@ document.querySelectorAll('.join-group').forEach(button => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': "{{ csrf_token() }}"
                 }
             });
             const data = await response.json();
@@ -68,7 +67,6 @@ document.querySelectorAll('.leave-group').forEach(button => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': "{{ csrf_token() }}"
                 }
             });
             const data = await response.json();
