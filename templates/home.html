@@ -2,145 +2,188 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row">
+    <div class="row g-4">
         <!-- Quick Actions Card -->
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+        <div class="col-lg-4">
+            <div class="glass-card p-4" data-aos="fade-right">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="fas fa-bolt fa-lg me-3 text-primary"></i>
+                    <h3 class="text-dark mb-0">Quick Actions</h3>
                 </div>
-                <div class="card-body">
-                    <a href="{{ url_for('calendar') }}" class="btn btn-primary btn-block mb-2">
-                        <i class="fas fa-calendar"></i> View Calendar
+                <div class="d-grid gap-3">
+                    <a href="{{ url_for('calendar.calendar') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-calendar me-2"></i>View Calendar
                     </a>
-                    <a href="{{ url_for('manage_classes') }}" class="btn btn-info btn-block">
-                        <i class="fas fa-book"></i> Manage Classes
+                    <a href="{{ url_for('classes.manage_classes') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-book me-2"></i>Manage Classes
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Class Peers Card -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-users"></i> Your Classmates</h5>
+        <div class="col-lg-8">
+            <div class="glass-card p-4" data-aos="fade-left">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="fas fa-users fa-lg me-3 text-secondary"></i>
+                    <h3 class="text-dark mb-0">Classmates</h3>
                 </div>
-                <div class="card-body">
-                    {% if matched_peers %}
+                
+                {% if matched_peers %}
+                    <div class="row g-3">
                         {% for class_name, peers in matched_peers.items() %}
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h3>{{ class_name }}</h3>
+                            <div class="col-12">
+                                <div class="glass-card p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-primary-soft rounded-circle p-2 me-3">
+                                            <i class="fas fa-book-open text-primary"></i>
+                                        </div>
+                                        <h4 class="text-dark mb-0">{{ class_name }}</h4>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        {% for peer in peers %}
+                                            <div class="col-md-6">
+                                                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar bg-primary-soft me-3">
+                                                            <i class="fas fa-user text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5 class="text-dark mb-0">{{ peer.username }}</h5>
+                                                            {% if peer in user.friends %}
+                                                                <span class="badge bg-success">Friend</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        {% if peer.id != user.id %}
+                                                            {% if peer not in user.friends %}
+                                                                <button onclick="addFriend({{ peer.id }})" 
+                                                                        class="btn btn-primary"
+                                                                        {% if current_user and peer in current_user.friends %}disabled{% endif %}>
+                                                                    {% if current_user and peer in current_user.friends %}
+                                                                        Friends
+                                                                    {% else %}
+                                                                        Add Friend
+                                                                    {% endif %}
+                                                                </button>
+                                                            {% else %}
+                                                                <a href="javascript:void(0)" 
+                                                                   onclick="goToMessages({{ peer.id }})" 
+                                                                   class="btn btn-secondary">
+                                                                    Message
+                                                                </a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-12">
+                                                <div class="text-center text-muted py-4">
+                                                    <i class="fas fa-users-slash fa-2x mb-3"></i>
+                                                    <p class="mb-0">No classmates found in this course</p>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                                <ul class="list-group list-group-flush">
-                                    {% for peer in peers %}
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>{{ peer.username }}</strong>
-                                                {% if peer in user.friends %}
-                                                    <span class="badge badge-success ml-2">Friend</span>
-                                                {% endif %}
-                                            </div>
-                                            <div>
-                                                {% if peer.id != user.id %}
-                                                    {% if peer not in user.friends %}
-                                                        <button onclick="connectWithPeer({{ peer.id }})" 
-                                                                class="btn btn-outline-primary btn-sm">
-                                                            Connect
-                                                        </button>
-                                                    {% else %}
-                                                        <a href="{{ url_for('messages', recipient_id=peer.id) }}" 
-                                                           class="btn btn-primary btn-sm">Message</a>
-                                                    {% endif %}
-                                                {% endif %}
-                                            </div>
-                                        </li>
-                                    {% else %}
-                                        <li class="list-group-item text-center">No classmates found</li>
-                                    {% endfor %}
-                                </ul>
                             </div>
                         {% endfor %}
-                    {% else %}
-                        <p class="text-center text-muted">No classmates found yet.</p>
-                    {% endif %}
-                </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users-slash fa-3x text-muted mb-4"></i>
+                        <h4 class="text-muted">No classmates found yet</h4>
+                        <p class="text-muted">Join classes to connect with peers</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<script>
-function connectWithPeer(peerId) {
-    const button = event.target;
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
 
-    fetch(`/connect_with_peer/${peerId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Update button appearance
-            button.innerHTML = 'Request Sent';
-            button.disabled = true;
-            button.classList.remove('btn-outline-primary');
-            button.classList.add('btn-secondary');
-            
-            // Show success message
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            Toast.fire({
-                icon: 'success',
-                title: 'Connection request sent!'
-            });
-        } else {
-            // Show error message
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: data.message || 'Something went wrong!'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'An error occurred while sending the request'
+.btn-primary {
+    background: linear-gradient(45deg, hsl(var(--color-primary)), hsl(var(--color-secondary)));
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsl(var(--color-primary)/0.3);
+}
+
+.btn-outline-primary {
+    border: 2px solid hsl(var(--color-primary));
+    color: hsl(var(--color-primary));
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: hsl(var(--color-primary)/0.1);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-soft {
+    background: hsl(var(--color-primary)/0.1) !important;
+}
+
+.text-primary {
+    color: hsl(var(--color-primary)) !important;
+}
+
+.text-secondary {
+    color: hsl(var(--color-secondary)) !important;
+}
+</style>
+
+<script>
+async function addFriend(friendId) {
+    try {
+        const response = await fetch(`/add_friend/${friendId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': "{{ csrf_token() }}"
+            }
         });
-    });
+        
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to add friend');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding friend');
+    }
+}
+
+function startChat(userId) {
+    window.location.href = `/messages/${userId}`;
 }
 </script>
 
-<!-- Add SweetAlert2 for better notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<style>
-.btn-outline-primary:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.connection-pending {
-    background-color: #e9ecef;
-    border-color: #e9ecef;
-    color: #6c757d;
-    cursor: not-allowed;
-}
-</style>
 {% endblock %}

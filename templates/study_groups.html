@@ -1,149 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Groups - {{ class_.name }}</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body class="bg-custom">
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-users"></i> Study Groups for {{ class_.name }}</h2>
-                    <button class="btn btn-primary" onclick="showCreateGroupModal()">
-                        <i class="fas fa-plus"></i> Create Group
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Study Groups for {{ class_obj.name }}</h2>
+    
+    <div class="mb-4">
+        <a href="{{ url_for('study.create_study_group_form', class_id=class_obj.id) }}" class="btn btn-primary">
+            Create New Study Group
+        </a>
+    </div>
+    
+    <div class="row">
+        {% for group in study_groups %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ group.name }}</h5>
+                    <p class="card-text">{{ group.description }}</p>
+                    <p><strong>Members:</strong> {{ group.members|length }}/{{ group.max_members }}</p>
+                    
+                    {% if current_user not in group.members %}
+                    <button class="btn btn-success join-group" data-group-id="{{ group.id }}">
+                        Join Group
                     </button>
-                </div>
-
-                <div class="row">
-                    {% for group in groups %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card study-group-card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ group.name }}</h5>
-                                <p class="card-text">{{ group.description }}</p>
-                                <div class="member-avatars mb-2">
-                                    {% for member in group.members[:5] %}
-                                    <span class="member-avatar" title="{{ member.username }}">
-                                        {{ member.username[0] }}
-                                    </span>
-                                    {% endfor %}
-                                    {% if group.members|length > 5 %}
-                                    <span class="member-avatar more">+{{ group.members|length - 5 }}</span>
-                                    {% endif %}
-                                </div>
-                                <p class="card-text">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users"></i> {{ group.members|length }}/{{ group.max_members }} members
-                                    </small>
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                {% if current_user in group.members %}
-                                <button class="btn btn-info btn-sm" onclick="viewGroup({{ group.id }})">
-                                    <i class="fas fa-door-open"></i> Enter
-                                </button>
-                                {% else %}
-                                <button class="btn btn-success btn-sm" onclick="joinGroup({{ group.id }})">
-                                    <i class="fas fa-sign-in-alt"></i> Join
-                                </button>
-                                {% endif %}
-                                {% if group.meeting_link %}
-                                <a href="{{ group.meeting_link }}" target="_blank" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-video"></i> Join Meeting
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+                    {% elif current_user.id != group.created_by %}
+                    <button class="btn btn-danger leave-group" data-group-id="{{ group.id }}">
+                        Leave Group
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
+</div>
 
-    <!-- Create Group Modal -->
-    <div class="modal fade" id="createGroupModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Create Study Group</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="createGroupForm">
-                        <div class="form-group">
-                            <label>Group Name</label>
-                            <input type="text" class="form-control" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" name="description"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Maximum Members</label>
-                            <input type="number" class="form-control" name="max_members" value="5" min="2" max="10">
-                        </div>
-                        <div class="form-group">
-                            <label>Meeting Link (optional)</label>
-                            <input type="url" class="form-control" name="meeting_link">
-                        </div>
-                        <input type="hidden" name="class_id" value="{{ class_.id }}">
-                        <button type="submit" class="btn btn-primary">Create Group</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function showCreateGroupModal() {
-            $('#createGroupModal').modal('show');
-        }
-
-        function joinGroup(groupId) {
-            fetch(`/join_study_group/${groupId}`, {
+<script>
+document.querySelectorAll('.join-group').forEach(button => {
+    button.addEventListener('click', async () => {
+        const groupId = button.dataset.groupId;
+        try {
+            const response = await fetch(`/study/groups/${groupId}/join`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': "{{ csrf_token() }}"
                 }
             });
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to join group');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error joining group');
         }
+    });
+});
 
-        function viewGroup(groupId) {
-            window.location.href = `/study_group/${groupId}`;
-        }
-
-        $('#createGroupForm').on('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch('/create_study_group', {
+document.querySelectorAll('.leave-group').forEach(button => {
+    button.addEventListener('click', async () => {
+        const groupId = button.dataset.groupId;
+        try {
+            const response = await fetch(`/study/groups/${groupId}/leave`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(Object.fromEntries(formData))
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': "{{ csrf_token() }}"
                 }
             });
-        });
-    </script>
-</body>
-</html>
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to leave group');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error leaving group');
+        }
+    });
+});
+</script>
+{% endblock %} 

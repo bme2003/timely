@@ -1,135 +1,131 @@
-/* Background and layout for all pages */
-body {
-    background-image: url('../static/images/background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    color: #333;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Base Styles */
+* {
     margin: 0;
-    font-family: 'Roboto', sans-serif;
+    box-sizing: border-box;
 }
 
-/* Title Styling */
-h1 {
-    font-family: 'Pacifico', cursive; /* Using Pacifico for the title */
-    color: #007bff; /* Primary color for the title */
-    font-size: 48px;
-    margin-top: 10px;
-    text-align: center;
+body {
+    font-family: var(--font-base);
+    line-height: 1.5;
+    color: hsl(var(--color-text));
+    background: hsl(var(--color-surface));
 }
 
-/* Logo Styling */
-.logo {
-    width: 80px; /* Adjust size based on visual preference */
-    margin-bottom: 20px;
-}
-
-/* Form container styling for pages like add_class and login */
+/* Utility Classes */
 .container {
-    background-color: rgba(255, 255, 255, 0.9); /* Light background with transparency */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    margin: auto;
+    width: min(100% - 3rem, 1440px);
+    margin-inline: auto;
 }
 
-/* Button Styling */
-.btn-primary {
-    background-color: #007bff;
+.gradient-text {
+    background: linear-gradient(
+        45deg,
+        hsl(var(--color-primary)),
+        hsl(var(--color-secondary))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Component Styles */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-magic {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+        45deg,
+        hsl(var(--color-primary)),
+        hsl(var(--color-secondary)),
+        hsl(var(--color-accent))
+    );
+    background-size: 200% 200%;
     border: none;
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    border: none;
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-}
-
-/* Smaller color picker styling */
-.form-control-color-picker {
-    width: 50px; /* Smaller color picker for a refined look */
-    height: 30px;
-    padding: 0;
-    border: none;
-}
-
-/* Terms text styling */
-.terms {
-    font-size: 14px;
-    color: #999;
-    margin-top: 20px;
-    text-align: center;
-}
-
-/* Calendar page adjustments */
-.calendar-container {
-    background-color: #e0f2ff; /* Light blue background for the calendar */
-    padding: 20px;
-    border-radius: 8px;
-}
-
-/* Sidebar for classes */
-.sidebar {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-size: 18px;
-}
-
-/* Group Title */
-.group-title {
-    font-weight: bold;
-    color: #007bff; /* Primary color for "Groups" label */
-    margin-bottom: 10px;
-}
-
-/* Group item styling */
-.group-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.group-item-circle {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-
-/* Adjustments for calendar items */
-.calendar-event {
-    background-color: #007bff;
     color: white;
-    padding: 5px;
-    border-radius: 4px;
-    font-size: 14px;
-    display: inline-block;
-    margin: 2px 0;
+    transition: 0.5s;
 }
 
-/* Responsive adjustments */
+.btn-magic:hover {
+    background-position: 100% 100%;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsl(var(--color-primary)/0.3);
+}
+
+/* Animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+.hover-top {
+    transition: transform 0.3s ease;
+}
+
+.hover-top:hover {
+    transform: translateY(-10px);
+}
+
+/* Feature Cards */
+.feature-card {
+    border: 1px solid hsl(var(--color-border));
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Badges */
+.badge {
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.05em;
+    padding: 0.35em 0.65em;
+    font-weight: 600;
+}
+
+.bg-primary { background: hsl(var(--color-primary))!important; }
+.bg-secondary { background: hsl(var(--color-secondary))!important; }
+.bg-accent { background: hsl(var(--color-accent))!important; }
+
+/* Social Icons */
+.fab {
+    transition: transform 0.3s ease;
+}
+
+.fab:hover {
+    transform: translateY(-3px);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .container {
-        width: 90%;
-        padding: 20px;
+    .hero-text {
+        font-size: 2.5rem!important;
     }
-    h1 {
-        font-size: 36px;
-    }
-    .btn-primary, .btn-secondary {
-        padding: 8px 16px;
-        font-size: 14px;
+    
+    .navbar-brand {
+        font-size: 1.25rem;
     }
 }

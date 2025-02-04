@@ -1,12 +1,51 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome</title>
+    <title>Welcome | Timely</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Welcome to Timely</h1>
-    <p>You are logged in!</p>
-    <a href="{{ url_for('logout') }}">Logout</a>
+<body class="d-flex align-items-center min-vh-100">
+    <div class="container text-center">
+        <div class="glass-card p-5 mx-auto" style="max-width: 600px;">
+            <div class="checkmark-wrapper mb-4">
+                <svg class="checkmark" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+            <h1 class="gradient-text fw-bold mb-3">Welcome to Timely!</h1>
+            <p class="lead text-muted mb-4">Your account has been successfully created</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-magic px-4">
+                    Go to Dashboard <i class="fas fa-rocket ms-2"></i>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-dark px-4">
+                    Logout <i class="fas fa-sign-out-alt ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke: #10b981;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+    </style>
 </body>
 </html>
-

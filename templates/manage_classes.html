@@ -1,39 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Manage Classes</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Your Classes</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Secret Web Name</th>
-                    <th>Class Color</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for class in user_classes %}
-                    <tr>
-                        <td>{{ class.secret_name }}</td>
-                        <td><span style="background-color: {{ class.color }}; padding: 5px 10px; border-radius: 5px;">&nbsp;</span></td>
-                        <td>
-                            <form action="{{ url_for('manage_classes') }}" method="post" style="display:inline;">
-                                <input type="hidden" name="class_id" value="{{ class.id }}">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="3" class="text-center">No classes found.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="{{ url_for('register_class') }}" class="btn btn-primary">Add a Class</a>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Your Classes</h2>
+    
+    <div class="mb-4">
+        <a href="{{ url_for('add_class') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Class
+        </a>
     </div>
-</body>
-</html>
+    
+    {% if user_classes %}
+        <div class="row">
+            {% for class in user_classes %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header" style="background-color: {{ class.color }}">
+                            <h5 class="card-title mb-0">{{ class.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Students: {{ class.students|length }}</p>
+                            <form action="{{ url_for('manage_classes') }}" method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="class_id" value="{{ class.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't added any classes yet. Click the button above to add your first class!
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
