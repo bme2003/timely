@@ -8,7 +8,7 @@
         <h2><i class="fas fa-book"></i> Study Resources</h2>
     </div>
     <div class="col-md-4 text-right">
-        <button class="btn btn-primary" onclick="showAddResourceModal()">
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addResourceModal">
             <i class="fas fa-plus"></i> Share Resource
         </button>
     </div>
@@ -98,54 +98,45 @@
 </div>
 
 <!-- Add Resource Modal -->
-<div class="modal fade" id="addResourceModal">
+<div class="modal fade" id="addResourceModal" tabindex="-1" aria-labelledby="addResourceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Share Resource</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h5 class="modal-title" id="addResourceModalLabel">Share Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="addResourceForm" enctype="multipart/form-data">
+            <form id="addResourceForm" action="{{ url_for('resources.share_resource') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="type" value="general">
                     
                     <div class="form-group">
                         <label>Class</label>
                         <select class="form-control" name="class_id" required>
-                            {% for class in classes %}
-                            <option value="{{ class.id }}">{{ class.name }}</option>
+                            <option value="">Select a class...</option>
+                            {% for class in user.classes %}
+                                <option value="{{ class.id }}">{{ class.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Title</label>
                         <input type="text" class="form-control" name="title" required>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Type</label>
-                        <select class="form-control" name="type" required>
-                            <option value="notes">Notes</option>
-                            <option value="assignment">Assignment</option>
-                            <option value="study_guide">Study Guide</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    
                     <div class="form-group">
                         <label>File</label>
                         <input type="file" class="form-control-file" name="file" required>
-                        <small class="text-muted">Allowed files: PDF, DOC, DOCX, TXT, PNG, JPG</small>
                     </div>
-                    
                     <div class="form-group">
                         <label>Notes (optional)</label>
                         <textarea class="form-control" name="notes"></textarea>
                     </div>
-                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Share Resource</button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -161,9 +152,10 @@ document.getElementById('addResourceForm').addEventListener('submit', async func
     const formData = new FormData(this);
     
     try {
-        const response = await fetch('/share_resource', {
+        const response = await fetch(this.action, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin'
         });
         
         const result = await response.json();
@@ -202,4 +194,4 @@ document.getElementById('filterForm').addEventListener('submit', async function(
     }
 });
 </script>
-{% endblock %}
+{% endblock %} 

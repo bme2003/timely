@@ -115,7 +115,8 @@
                 fetch('/api/study_tip', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ topic, difficulty })
                 })
@@ -130,7 +131,8 @@
             fetch('/track_study_analytics', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(data)
             })
@@ -143,4 +145,4 @@
         }
     </script>
 </body>
-</html>
+</html> 

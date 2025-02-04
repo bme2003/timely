@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create Study Group for {{ class_obj.name }}</h2>
+    
+    <form method="POST" action="{{ url_for('study.create_study_group', class_id=class_obj.id) }}" class="mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mb-3">
+            <label for="name" class="form-label">Group Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="meeting_time" class="form-label">Meeting Time</label>
+            <input type="text" class="form-control" id="meeting_time" name="meeting_time" 
+                   placeholder="e.g., Mondays at 3:00 PM" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" name="location" 
+                   placeholder="e.g., Library Room 204" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="max_members" class="form-label">Maximum Members</label>
+            <input type="number" class="form-control" id="max_members" name="max_members" 
+                   min="2" max="50" value="10" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Create Study Group</button>
+        <a href="{{ url_for('study.view_study_groups', class_id=class_obj.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 
