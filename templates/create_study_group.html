@@ -5,7 +5,6 @@
     <h2>Create Study Group for {{ class_obj.name }}</h2>
     
     <form method="POST" action="{{ url_for('study.create_study_group', class_id=class_obj.id) }}" class="mt-4">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
         <div class="mb-3">
             <label for="name" class="form-label">Group Name</label>

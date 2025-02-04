@@ -118,7 +118,6 @@
                         <h3 class="section-title">Profile Settings</h3>
                         
                         <form action="{{ url_for('main.profile') }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             
                             <div class="mb-4">
                                 <label class="form-label">Username</label>

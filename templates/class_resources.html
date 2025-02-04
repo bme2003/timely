@@ -46,7 +46,6 @@
                 </button>
             </div>
             <form id="uploadResourceForm" action="{{ url_for('resource_routes.upload_resource') }}" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="class_id" value="{{ class_.id }}">
                 
                 <div class="modal-body">

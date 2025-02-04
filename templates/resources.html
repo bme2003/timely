@@ -107,9 +107,7 @@
             </div>
             <form id="addResourceForm" action="{{ url_for('resources.share_resource') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="type" value="general">
-                    
                     <div class="form-group">
                         <label>Class</label>
                         <select class="form-control" name="class_id" required>

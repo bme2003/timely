@@ -124,43 +124,27 @@
 
                     <!-- Login Form -->
                     <form method="POST" action="{{ url_for('auth.login') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <!-- Username Input -->
                         <div class="mb-4">
                             <label class="form-label text-white">Username</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0">
                                     <i class="fas fa-user text-muted"></i>
                                 </span>
-                                <input type="text" 
-                                       class="form-control border-start-0" 
-                                       name="username" 
-                                       placeholder="Enter your username"
-                                       required>
+                                <input type="text" class="form-control border-start-0" name="username" placeholder="Enter your username" required>
                             </div>
                         </div>
-
-                        <!-- Password Input -->
                         <div class="mb-4">
                             <label class="form-label text-white">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0">
                                     <i class="fas fa-lock text-muted"></i>
                                 </span>
-                                <input type="password" 
-                                       class="form-control border-start-0" 
-                                       name="password" 
-                                       placeholder="••••••••"
-                                       required>
+                                <input type="password" class="form-control border-start-0" name="password" placeholder="••••••••" required>
                             </div>
                         </div>
-
-                        <!-- Submit Button -->
                         <button type="submit" class="btn btn-magic btn-lg w-100">
                             <i class="fas fa-unlock-alt me-2"></i>Sign In
                         </button>
-
-                        <!-- Additional Links -->
                         <div class="text-center mt-4">
                             <a href="#" class="text-decoration-none text-muted hover-text-primary">
                                 Forgot Password?
