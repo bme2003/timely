@@ -22,7 +22,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ resource.title }}</h5>
                             <p class="card-text">{{ resource.description }}</p>
-                            <a href="{{ url_for('resource_routes.download', resource_id=resource.id) }}" 
+                            <a href="{{ url_for('resource_routes.download_resource', resource_id=resource.id) }}" 
                                class="btn btn-sm btn-primary">
                                 <i class="fas fa-download"></i> Download
                             </a>
