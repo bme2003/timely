@@ -1,12 +1,13 @@
 from models import User, Class, Event, Message, Notification, CourseResource, StudyGroup, Resource, PeerReview, StudyMeeting
-from app import db
+from flask import session, redirect, url_for
+from extensions import db
 from datetime import datetime, timedelta
 import requests
 from icalendar import Calendar
 import logging
 import re
 from functools import wraps
-from flask import redirect, url_for, flash, session, current_app
+from flask import flash, current_app
 import random
 import pytz
 
@@ -16,13 +17,13 @@ def login_required(f):
         if 'user_id' not in session:
             flash('Please log in to access this page.', 'warning')
             return redirect(url_for('auth.login'))
-            
+        
         user = db.session.get(User, session['user_id'])
         if not user:
             session.clear()
             flash('Session expired. Please log in again.', 'warning')
             return redirect(url_for('auth.login'))
-            
+        
         return f(*args, **kwargs)
     return decorated_function
 
@@ -234,8 +235,8 @@ def create_notification(user_id, message, notification_type='general'):
         db.session.rollback()
         logging.error(f"Error creating notification: {str(e)}")
 
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'gif'}
+
 def allowed_file(filename):
-    # Define allowed file extensions
-    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

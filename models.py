@@ -63,7 +63,9 @@ class User(db.Model):
 class Class(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    color = db.Column(db.String(7), default="#000000")
+    color = db.Column(db.String(7), default='#3498db')
+    archived = db.Column(db.Boolean, default=False)
+    archived_date = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     # Fix relationships
@@ -149,6 +151,7 @@ class Resource(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     url = db.Column(db.String(500))
+    filename = db.Column(db.String(500))
     file_path = db.Column(db.String(500))
     type = db.Column(db.String(50))  # pdf, video, link, note
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
