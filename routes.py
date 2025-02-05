@@ -756,16 +756,15 @@ def resources():
     try:
         user = db.session.get(User, session['user_id'])
         
+        # Modified query to show resources from all users in shared classes
+        query = (CourseResource.query
+                .join(Class, CourseResource.class_id == Class.id)
+                .filter(Class.students.any(id=user.id)))
+        
         # Get filter parameters
         class_id = request.args.get('class_id')
         resource_type = request.args.get('type')
         sort = request.args.get('sort', 'newest')
-        
-        # Base query - exclude archived classes
-        query = CourseResource.query.join(Class).filter(
-            Class.students.any(id=user.id),
-            Class.archived == False
-        )
         
         # Apply filters
         if class_id:
@@ -782,6 +781,9 @@ def resources():
             query = query.order_by(CourseResource.created_at.desc())
         
         resources_list = query.all()
+        logging.info(f"Query SQL: {query}")  # Debug the actual SQL query
+        logging.info(f"Loaded {len(resources_list)} resources for user {user.id}")
+        
         active_classes = [c for c in user.classes if not c.archived]
         
         return render_template('resources.html',
@@ -798,51 +800,75 @@ def resources():
 @login_required
 def share_resource():
     try:
-        user = db.session.get(User, session['user_id'])
+        logging.info("Starting resource upload process...")
         
         if 'file' not in request.files:
+            logging.error("No file in request")
             return jsonify({'error': 'No file uploaded'}), 400
             
         file = request.files['file']
         if file.filename == '':
+            logging.error("Empty filename")
             return jsonify({'error': 'No file selected'}), 400
-            
+
+        # Log form data
+        logging.info(f"Form data received: {request.form}")
+        
         if not allowed_file(file.filename):
+            logging.error(f"Invalid file type: {file.filename}")
             return jsonify({'error': 'File type not allowed'}), 400
             
-        filename = secure_filename(file.filename)
-        upload_folder = current_app.config['UPLOAD_FOLDER']
-        os.makedirs(upload_folder, exist_ok=True)
-        
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)
-        
-        # Set resource_type either from the form, or use a default value (for example, "general")
-        resource_type = request.form.get('type') or "general"
-        
+        # Create database entry first
         resource = CourseResource(
             title=request.form.get('title'),
-            resource_type=resource_type,
+            resource_type=request.form.get('resource_type'),
             notes=request.form.get('notes'),
-            url=f"/uploads/{filename}",
+            shared_by=session['user_id'],
             class_id=request.form.get('class_id'),
-            shared_by=user.id
+            created_at=datetime.utcnow()
         )
         
-        db.session.add(resource)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Resource shared successfully!'
-        })
-        
+        try:
+            logging.info("Attempting to save resource to database...")
+            db.session.add(resource)
+            db.session.flush()
+            
+            filename = secure_filename(file.filename)
+            file_ext = os.path.splitext(filename)[1]
+            unique_filename = f"resource_{resource.id}{file_ext}"
+            
+            # Save to database directory
+            db_path = os.path.join(current_app.root_path, 'instance')
+            os.makedirs(db_path, exist_ok=True)
+            file_path = os.path.join(db_path, unique_filename)
+            file.save(file_path)
+            
+            resource.url = unique_filename
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Resource uploaded successfully!',
+                'resource': {
+                    'id': resource.id,
+                    'title': resource.title,
+                    'notes': resource.notes,
+                    'url': resource.url,
+                    'class_id': resource.class_id,
+                    'resource_type': resource.resource_type
+                }
+            })
+            
+        except Exception as db_error:
+            logging.error(f"Database error: {str(db_error)}")
+            db.session.rollback()
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise db_error
+            
     except Exception as e:
-        logging.error(f"Share resource error: {str(e)}")
-        return jsonify({
-            'error': 'Failed to upload resource',
-            'details': str(e)
-        }), 500
+        logging.error(f"Upload error: {str(e)}")
+        return jsonify({'error': 'Failed to upload resource', 'details': str(e)}), 500
 
 @resource_routes.route('/class/<int:class_id>/resources')
 @login_required
@@ -866,53 +892,49 @@ def class_resources(class_id):
         flash('Error accessing class resources', 'error')
         return redirect(url_for('main.home'))
 
-@resource_routes.route('/upload', methods=['POST'])
+@resource_routes.route('/upload_resource', methods=['POST'])
 @login_required
 def upload_resource():
     try:
-        logging.info("Starting resource upload...")
-
         if 'file' not in request.files:
-            logging.error("No file in request")
-            return jsonify({'error': 'No file selected'}), 400
-
+            return jsonify({'error': 'No file uploaded'}), 400
+            
         file = request.files['file']
         if file.filename == '':
-            logging.error("Empty filename")
             return jsonify({'error': 'No file selected'}), 400
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-
-            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-
-            file_path = os.path.join(upload_dir, unique_filename)
-            file.save(file_path)
-            logging.info(f"File saved to: {file_path}")
-
-            resource = CourseResource(
-                title=request.form.get('title'),
-                resource_type=file.filename.split('.')[-1].lower(),
-                url=f'/static/uploads/{unique_filename}',
-                notes=request.form.get('description'),
-                shared_by=session['user_id'],
-                class_id=request.form.get('class_id'),
-                created_at=datetime.utcnow()
-            )
-            logging.info(f"Created resource object for class {resource.class_id} with title '{resource.title}'")
-
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'File type not allowed'}), 400
+            
+        # Create database entry first
+        resource = CourseResource(
+            title=request.form.get('title'),
+            resource_type=request.form.get('resource_type'),
+            notes=request.form.get('notes'),
+            shared_by=session['user_id'],
+            class_id=request.form.get('class_id'),
+            created_at=datetime.utcnow()
+        )
+        
+        try:
+            # Add and flush to get the ID (but don't commit yet)
             db.session.add(resource)
+            db.session.flush()
+            
+            # Now save the file with the resource ID in the filename
+            filename = secure_filename(file.filename)
+            file_ext = os.path.splitext(filename)[1]
+            unique_filename = f"resource_{resource.id}{file_ext}"
+            
+            # Save file to database directory
+            db_path = os.path.join(current_app.root_path, 'instance')
+            file_path = os.path.join(db_path, unique_filename)
+            file.save(file_path)
+            
+            # Update resource with file info and commit
+            resource.url = unique_filename
             db.session.commit()
-            logging.info(f"Resource saved with ID: {resource.id}")
-
-            # Debug: Log all resources for this class so you can check the count
-            resources_in_db = CourseResource.query.filter_by(class_id=resource.class_id).all()
-            logging.info(f"Total resources for class {resource.class_id}: {len(resources_in_db)}")
-            for res in resources_in_db:
-                logging.info(f" - Resource ID {res.id}: {res.title}")
-
+            
             return jsonify({
                 'success': True,
                 'message': 'Resource uploaded successfully!',
@@ -921,49 +943,54 @@ def upload_resource():
                     'title': resource.title,
                     'notes': resource.notes,
                     'url': resource.url,
-                    'class_id': resource.class_id
+                    'class_id': resource.class_id,
+                    'resource_type': resource.resource_type
                 }
             })
-        else:
-            logging.error("File type not allowed")
-            return jsonify({'error': 'File type not allowed'}), 400
-
+            
+        except Exception as db_error:
+            db.session.rollback()
+            raise db_error
+            
     except Exception as e:
         logging.error(f"Upload error: {str(e)}")
-        db.session.rollback()
         return jsonify({'error': 'Failed to upload resource', 'details': str(e)}), 500
 
 @resource_routes.route('/download/<int:resource_id>')
 @login_required
 def download_resource(resource_id):
     try:
-        resource = Resource.query.get_or_404(resource_id)
+        resource = CourseResource.query.get_or_404(resource_id)
         
-        if not resource.file_path:
+        # Verify user has access to this resource's class
+        user = db.session.get(User, session['user_id'])
+        class_ = db.session.get(Class, resource.class_id)
+        if not class_ or user not in class_.students:
+            flash('Unauthorized access to resource', 'error')
+            return redirect(url_for('main.home'))
+        
+        if not resource.url:
             flash('No file available for download', 'error')
-            return redirect(request.referrer)
+            return redirect(request.referrer or url_for('resources.resources'))
             
-        # Get the file from the static/uploads directory
-        file_path = os.path.join(current_app.root_path, 'static', 'uploads', resource.file_path)
+        file_path = os.path.join(current_app.root_path, 'instance', resource.url)
         
         if not os.path.exists(file_path):
             flash('File not found', 'error')
-            return redirect(request.referrer)
+            return redirect(request.referrer or url_for('resources.resources'))
             
-        # Increment download counter
-        resource.downloads += 1
-        db.session.commit()
+        original_filename = resource.url.replace(f"resource_{resource.id}", "")
         
         return send_file(
             file_path,
             as_attachment=True,
-            download_name=resource.filename
+            download_name=f"{resource.title}{original_filename}"
         )
-        
+            
     except Exception as e:
         logging.error(f"Download error: {str(e)}")
         flash('Error downloading resource', 'error')
-        return redirect(request.referrer)
+        return redirect(request.referrer or url_for('resources.resources'))
 
 # --------------------------
 # Main Routes
