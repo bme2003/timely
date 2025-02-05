@@ -22,8 +22,8 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ resource.title }}</h5>
                             <p class="card-text">{{ resource.description }}</p>
-                            <a href="{{ url_for('resources.download_resource', resource_id=resource.id) }}" 
-                               class="btn btn-info btn-sm">
+                            <a href="{{ url_for('resource_routes.download', resource_id=resource.id) }}" 
+                               class="btn btn-sm btn-primary">
                                 <i class="fas fa-download"></i> Download
                             </a>
                         </div>
@@ -75,6 +75,10 @@
 document.getElementById('uploadResourceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // Disable the submit button to prevent duplicate submissions.
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+
     const formData = new FormData(this);
     
     try {
@@ -85,15 +89,23 @@ document.getElementById('uploadResourceForm').addEventListener('submit', async f
         });
         
         const data = await response.json();
+        console.log('Upload response:', data);
         
-        if (data.success) {
-            window.location.reload();
+        if (response.ok && data.success) {
+            alert(data.message);
+            // For debugging, output the returned resource details.
+            console.log("Resource created:", data.resource);
+            // Optionally update the DOM with the new resource here.
+            window.location.reload();  // Remove this if you're updating dynamically.
         } else {
             alert(data.error || 'Failed to upload resource');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to upload resource');
+        console.error('Error during upload:', error);
+        alert('Failed to upload resource. Please try again.');
+    } finally {
+        // Re-enable the submit button.
+        submitButton.disabled = false;
     }
 });
 </script>

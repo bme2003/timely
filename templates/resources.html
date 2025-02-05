@@ -63,37 +63,33 @@
 
     <!-- Resources List -->
     <div class="col-md-9">
-        {% if resources %}
-            <div class="row" id="resourcesList">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Resources</h2>
+                    <button class="btn btn-primary mb-3" onclick="showAddResourceModal()">
+                        <i class="fas fa-plus"></i> Add Resource
+                    </button>
+                </div>
+            </div>
+            
+            <div class="resources-container">
                 {% for resource in resources %}
-                <div class="col-md-6 mb-4">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ resource.title }}</h5>
-                            {% if resource.notes %}
-                                <p class="card-text">{{ resource.notes }}</p>
-                            {% endif %}
-                            <div class="resource-meta mb-2">
-                                <span class="badge badge-primary">{{ resource.resource_type }}</span>
-                                <small class="text-muted ml-2">
-                                    Shared {{ resource.created_at.strftime('%Y-%m-%d') }}
-                                </small>
-                            </div>
-                            <div class="btn-group">
-                                <a href="{{ resource.url }}" class="btn btn-primary btn-sm" target="_blank">
-                                    <i class="fas fa-download"></i> Download
-                                </a>
-                            </div>
+                <div class="resource-item card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ resource.title }}</h5>
+                        <p class="card-text">{{ resource.notes }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Shared {{ resource.created_at.strftime('%Y-%m-%d') }}</small>
+                            <a href="{{ resource.url }}" class="btn btn-primary" download>
+                                <i class="fas fa-download"></i> Download
+                            </a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> No resources have been shared yet.
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 
@@ -105,29 +101,28 @@
                 <h5 class="modal-title" id="addResourceModalLabel">Share Resource</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addResourceForm" action="{{ url_for('resources.share_resource') }}" method="POST" enctype="multipart/form-data">
+            <form id="addResourceForm" action="{{ url_for('resources.upload_resource') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" name="type" value="general">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>Class</label>
                         <select class="form-control" name="class_id" required>
                             <option value="">Select a class...</option>
-                            {% for class in user.classes %}
+                            {% for class in classes %}
                                 <option value="{{ class.id }}">{{ class.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>Title</label>
                         <input type="text" class="form-control" name="title" required>
                     </div>
-                    <div class="form-group">
-                        <label>File</label>
-                        <input type="file" class="form-control-file" name="file" required>
+                    <div class="form-group mb-3">
+                        <label>Description</label>
+                        <textarea class="form-control" name="description"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Notes (optional)</label>
-                        <textarea class="form-control" name="notes"></textarea>
+                    <div class="form-group mb-3">
+                        <label>File</label>
+                        <input type="file" class="form-control" name="file" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -147,6 +142,9 @@ function showAddResourceModal() {
 document.getElementById('addResourceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    
     const formData = new FormData(this);
     
     try {
@@ -156,17 +154,46 @@ document.getElementById('addResourceForm').addEventListener('submit', async func
             credentials: 'same-origin'
         });
         
-        const result = await response.json();
+        const data = await response.json();
+        console.log('Upload response:', data); // Debug log
         
-        if (result.success) {
-            $('#addResourceModal').modal('hide');
-            location.reload();
+        if (response.ok && data.success) {
+            // Add the new resource to the container
+            const resourcesContainer = document.querySelector('.resources-container');
+            if (resourcesContainer && data.resource) {
+                const newResource = document.createElement('div');
+                newResource.className = 'resource-item card mb-3';
+                newResource.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${data.resource.title}</h5>
+                        <p class="card-text">${data.resource.notes || ''}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Just now</small>
+                            <a href="${data.resource.url}" class="btn btn-primary" download>
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                `;
+                resourcesContainer.insertBefore(newResource, resourcesContainer.firstChild);
+            }
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addResourceModal'));
+            modal.hide();
+            
+            // Reset the form
+            this.reset();
+            
+            alert(data.message);
         } else {
-            alert(result.error || 'Failed to upload resource');
+            alert(data.error || 'Failed to upload resource');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Failed to upload resource');
+        alert('Failed to upload resource. Please try again.');
+    } finally {
+        submitButton.disabled = false;
     }
 });
 
