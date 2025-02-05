@@ -141,13 +141,14 @@
             <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}" style="color: hsl(var(--color-primary))">
                 <i class="fas fa-clock me-2"></i>Timely
             </a>
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-4">
                 <a class="nav-link d-flex align-items-center" href="{{ url_for('resources.resources') }}">
                     <i class="far fa-file-alt fa-lg me-2"></i>
                     Resources
                 </a>
-                <a class="nav-link" href="{{ url_for('main.profile') }}" style="color: hsl(var(--color-text))">
-                    <i class="fas fa-cog me-2"></i>Canvas Settings
+                <a class="nav-link d-flex align-items-center" href="{{ url_for('main.profile') }}" style="color: hsl(var(--color-text))">
+                    <i class="fas fa-cog me-2"></i>
+                    Canvas Settings
                 </a>
             </div>
         </div>

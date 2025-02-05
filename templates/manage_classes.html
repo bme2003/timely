@@ -2,39 +2,84 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Manage Your Classes</h2>
-    
-    <div class="mb-4">
-        <a href="{{ url_for('add_class') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Class
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-book me-2"></i>Manage Your Classes</h2>
+        <a href="{{ url_for('classes.add_class') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Class
         </a>
     </div>
     
-    {% if user_classes %}
-        <div class="row">
-            {% for class in user_classes %}
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-header" style="background-color: {{ class.color }}">
-                            <h5 class="card-title mb-0">{{ class.name }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>Students: {{ class.students|length }}</p>
-                            <form action="{{ url_for('manage_classes') }}" method="POST" class="d-inline">
-                                <input type="hidden" name="class_id" value="{{ class.id }}">
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> Remove
-                                </button>
-                            </form>
+    <!-- Active Classes -->
+    <div class="mb-5">
+        <h3 class="mb-4">Current Classes</h3>
+        {% if active_classes %}
+            <div class="row">
+                {% for class in active_classes %}
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <span style="color: {{ class.color }};">●</span> 
+                                    {{ class.name }}
+                                </h5>
+                                <form action="{{ url_for('classes.manage_classes') }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="class_id" value="{{ class.id }}">
+                                    <input type="hidden" name="action" value="archive">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm" 
+                                            onclick="return confirm('Archive this class?')">
+                                        <i class="fas fa-archive me-1"></i>Archive
+                                    </button>
+                                </form>
+                            </div>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-users me-2"></i>{{ class.students|length }} Students
+                            </p>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info">
-            You haven't added any classes yet. Click the button above to add your first class!
-        </div>
-    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass-card p-4 text-center">
+                <h4>No Active Classes</h4>
+                <p class="text-muted">Start by adding your first class!</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Archived Classes -->
+    <div class="mt-5">
+        <h3 class="mb-4">Previous Classes</h3>
+        {% if archived_classes %}
+            <div class="row">
+                {% for class in archived_classes %}
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-card p-4 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-muted">
+                                    <span style="color: {{ class.color }};">●</span> 
+                                    {{ class.name }}
+                                </h5>
+                                <form action="{{ url_for('classes.manage_classes') }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="class_id" value="{{ class.id }}">
+                                    <input type="hidden" name="action" value="restore">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-undo me-1"></i>Restore
+                                    </button>
+                                </form>
+                            </div>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-clock me-2"></i>Archived {{ class.archived_date.strftime('%Y-%m-%d') }}
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass-card p-4 text-center text-muted">
+                <h4>No Archived Classes</h4>
+                <p>Your archived classes will appear here</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

@@ -21,10 +21,14 @@
             font-family: 'Inter', sans-serif;
             background: hsl(var(--color-surface));
             min-height: 100vh;
-            display: flex;
-            align-items: center;
             position: relative;
-            overflow: hidden;
+            overflow-y: auto; /* Allow vertical scrolling */
+            padding: 2rem 0; /* Add padding to prevent content from touching edges */
+        }
+
+        .container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
         }
 
         .glass-card {
@@ -34,6 +38,8 @@
             border-radius: 16px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            max-height: 90vh; /* Maximum height relative to viewport */
+            overflow-y: auto; /* Allow scrolling within the card if content is too long */
         }
 
         .gradient-text {
@@ -215,9 +221,7 @@
                         <!-- Login Link -->
                         <div class="text-center mt-4">
                             <span class="text-muted">Already have an account?</span>
-                            <a href="#" class="text-decoration-none gradient-text ms-2">
-                                Sign in here
-                            </a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Login here</a>
                         </div>
                     </form>
                 </div>

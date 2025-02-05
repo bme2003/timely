@@ -1,24 +1,24 @@
 from app import create_app
 from extensions import db
-from models import User, Class, Event, Message, Notification, CourseResource, StudyGroup
-from sqlalchemy import inspect
+from models import User, Class, Event, Message, Notification, CourseResource, StudyGroup, Resource, PeerReview, StudyMeeting
+import os
 
 def init_db():
     app = create_app()
+    
     with app.app_context():
-        # Create tables
+        # Create uploads directory
+        upload_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Remove existing database if it exists
+        if os.path.exists('calendar.db'):
+            os.remove('calendar.db')
+            
+        # Create all tables
         db.create_all()
         
-        # Add event_type column if it doesn't exist
-        inspector = inspect(db.engine)
-        if 'event' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('event')]
-            if 'event_type' not in columns:
-                with db.engine.connect() as conn:
-                    conn.execute(db.text('ALTER TABLE event ADD COLUMN event_type VARCHAR(50) DEFAULT "assignment"'))
-                    conn.commit()
-        
-        db.session.commit()
+        print("Database initialized successfully!")
 
 if __name__ == '__main__':
     init_db() 

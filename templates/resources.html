@@ -22,13 +22,13 @@
                 <h5>Filters</h5>
             </div>
             <div class="card-body">
-                <form id="filterForm">
+                <form id="filterForm" action="{{ url_for('resources.resources') }}" method="GET">
                     <div class="form-group">
                         <label>Class</label>
                         <select class="form-control" name="class_id">
                             <option value="">All Classes</option>
                             {% for class in classes %}
-                            <option value="{{ class.id }}">{{ class.name }}</option>
+                            <option value="{{ class.id }}" {% if request.args.get('class_id')|string == class.id|string %}selected{% endif %}>{{ class.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -37,19 +37,19 @@
                         <label>Resource Type</label>
                         <select class="form-control" name="type">
                             <option value="">All Types</option>
-                            <option value="notes">Notes</option>
-                            <option value="assignment">Assignment</option>
-                            <option value="study_guide">Study Guide</option>
-                            <option value="other">Other</option>
+                            <option value="notes" {% if request.args.get('type') == 'notes' %}selected{% endif %}>Notes</option>
+                            <option value="assignment" {% if request.args.get('type') == 'assignment' %}selected{% endif %}>Assignment</option>
+                            <option value="study_guide" {% if request.args.get('type') == 'study_guide' %}selected{% endif %}>Study Guide</option>
+                            <option value="other" {% if request.args.get('type') == 'other' %}selected{% endif %}>Other</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Sort By</label>
                         <select class="form-control" name="sort">
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="title">Title A-Z</option>
+                            <option value="newest" {% if request.args.get('sort', 'newest') == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="title" {% if request.args.get('sort') == 'title' %}selected{% endif %}>Title A-Z</option>
                         </select>
                     </div>
                     
@@ -80,7 +80,7 @@
                                 </small>
                             </div>
                             <div class="btn-group">
-                                <a href="{{ resource.url }}" class="btn btn-primary btn-sm" target="_blank">
+                                <a href="{{ url_for('resources.download_resource', resource_id=resource.id) }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-download"></i> Download
                                 </a>
                             </div>
@@ -107,25 +107,34 @@
             </div>
             <form id="addResourceForm" action="{{ url_for('resources.share_resource') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" name="type" value="general">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>Class</label>
                         <select class="form-control" name="class_id" required>
                             <option value="">Select a class...</option>
-                            {% for class in user.classes %}
+                            {% for class in classes %}
                                 <option value="{{ class.id }}">{{ class.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
+                        <label>Resource Type</label>
+                        <select class="form-control" name="resource_type" required>
+                            <option value="">Select a type...</option>
+                            <option value="notes">Notes</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="study_guide">Study Guide</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
                         <label>Title</label>
                         <input type="text" class="form-control" name="title" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>File</label>
-                        <input type="file" class="form-control-file" name="file" required>
+                        <input type="file" class="form-control" name="file" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>Notes (optional)</label>
                         <textarea class="form-control" name="notes"></textarea>
                     </div>
@@ -140,9 +149,25 @@
 </div>
 
 <script>
-function showAddResourceModal() {
-    $('#addResourceModal').modal('show');
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const searchParams = new URLSearchParams();
+            
+            for (const [key, value] of formData.entries()) {
+                if (value) {  // Only add parameters with values
+                    searchParams.append(key, value);
+                }
+            }
+            
+            const queryString = searchParams.toString();
+            window.location.href = queryString ? `/resources/resources?${queryString}` : '/resources/resources';
+        });
+    }
+});
 
 document.getElementById('addResourceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -159,7 +184,8 @@ document.getElementById('addResourceForm').addEventListener('submit', async func
         const result = await response.json();
         
         if (result.success) {
-            $('#addResourceModal').modal('hide');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addResourceModal'));
+            modal.hide();
             location.reload();
         } else {
             alert(result.error || 'Failed to upload resource');
@@ -167,28 +193,6 @@ document.getElementById('addResourceForm').addEventListener('submit', async func
     } catch (error) {
         console.error('Error:', error);
         alert('Failed to upload resource');
-    }
-});
-
-// Add filter functionality
-document.getElementById('filterForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const params = new URLSearchParams(formData);
-    
-    try {
-        const response = await fetch(`/resources?${params.toString()}`);
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newResourcesList = doc.getElementById('resourcesList');
-        
-        if (newResourcesList) {
-            document.getElementById('resourcesList').innerHTML = newResourcesList.innerHTML;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to apply filters');
     }
 });
 </script>

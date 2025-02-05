@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash, current_app
-from models import User, Class, Event, Message, Notification, CourseResource, StudyGroup, Resource, StudyMeeting
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash, current_app, send_from_directory, send_file
 from extensions import db
+from models import User, Class, Event, Message, Notification, CourseResource, StudyGroup, Resource, StudyMeeting
 from datetime import datetime, timedelta, timezone
 from utils import (
     login_required,
@@ -174,23 +174,32 @@ def logout():
 def calendar():
     try:
         user = db.session.get(User, session['user_id'])
-        classes = user.classes
-        events = Event.query.filter_by(user_id=user.id).all()
+        # Filter out archived classes
+        active_classes = [c for c in user.classes if not c.archived]
         
+        # Only get events from active classes
+        events = Event.query.join(Class).filter(
+            Event.user_id == user.id,
+            Class.archived == False
+        ).all()
+        
+        # Get classmates for each active class
         classmates_by_class = {}
-        for class_obj in classes:
+        for class_obj in active_classes:
             classmates = [student for student in class_obj.students if student.id != user.id]
             classmates_by_class[class_obj.id] = classmates
         
+        # Safely check for Canvas URL
         show_canvas_import = bool(getattr(user, 'canvas_ical_url', None))
         
         return render_template('calendar.html',
             user=user,
-            classes=classes,
+            classes=active_classes,
             events=events,
             show_canvas_import=show_canvas_import,
             classmates_by_class=classmates_by_class
         )
+        
     except Exception as e:
         logging.error(f"Calendar error: {str(e)}")
         flash('An error occurred while loading your calendar.', 'error')
@@ -201,7 +210,11 @@ def calendar():
 def get_calendar_events():
     try:
         user = db.session.get(User, session['user_id'])
-        events = Event.query.filter_by(user_id=user.id).all()
+        # Only get events from non-archived classes
+        events = Event.query.join(Class).filter(
+            Event.user_id == user.id,
+            Class.archived == False
+        ).all()
         
         event_list = []
         for event in events:
@@ -743,22 +756,22 @@ def resources():
     try:
         user = db.session.get(User, session['user_id'])
         
+        # Modified query to show resources from all users in shared classes
+        query = (CourseResource.query
+                .join(Class, CourseResource.class_id == Class.id)
+                .filter(Class.students.any(id=user.id)))
+        
         # Get filter parameters
         class_id = request.args.get('class_id')
         resource_type = request.args.get('type')
         sort = request.args.get('sort', 'newest')
-        
-        # Base query
-        query = CourseResource.query.join(Class).filter(
-            Class.students.any(id=user.id)
-        )
         
         # Apply filters
         if class_id:
             query = query.filter(CourseResource.class_id == class_id)
         if resource_type:
             query = query.filter(CourseResource.resource_type == resource_type)
-        
+            
         # Apply sorting
         if sort == 'oldest':
             query = query.order_by(CourseResource.created_at.asc())
@@ -767,12 +780,16 @@ def resources():
         else:  # newest
             query = query.order_by(CourseResource.created_at.desc())
         
-        resources = query.all()
+        resources_list = query.all()
+        logging.info(f"Query SQL: {query}")  # Debug the actual SQL query
+        logging.info(f"Loaded {len(resources_list)} resources for user {user.id}")
+        
+        active_classes = [c for c in user.classes if not c.archived]
         
         return render_template('resources.html',
                              user=user,
-                             resources=resources,
-                             classes=user.classes)
+                             resources=resources_list,
+                             classes=active_classes)
                              
     except Exception as e:
         logging.error(f"Error loading resources: {str(e)}")
@@ -783,51 +800,75 @@ def resources():
 @login_required
 def share_resource():
     try:
-        user = db.session.get(User, session['user_id'])
+        logging.info("Starting resource upload process...")
         
         if 'file' not in request.files:
+            logging.error("No file in request")
             return jsonify({'error': 'No file uploaded'}), 400
             
         file = request.files['file']
         if file.filename == '':
+            logging.error("Empty filename")
             return jsonify({'error': 'No file selected'}), 400
-            
+
+        # Log form data
+        logging.info(f"Form data received: {request.form}")
+        
         if not allowed_file(file.filename):
+            logging.error(f"Invalid file type: {file.filename}")
             return jsonify({'error': 'File type not allowed'}), 400
             
-        filename = secure_filename(file.filename)
-        upload_folder = current_app.config['UPLOAD_FOLDER']
-        os.makedirs(upload_folder, exist_ok=True)
-        
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)
-        
-        # Set resource_type either from the form, or use a default value (for example, "general")
-        resource_type = request.form.get('type') or "general"
-        
+        # Create database entry first
         resource = CourseResource(
             title=request.form.get('title'),
-            resource_type=resource_type,
+            resource_type=request.form.get('resource_type'),
             notes=request.form.get('notes'),
-            url=f"/uploads/{filename}",
+            shared_by=session['user_id'],
             class_id=request.form.get('class_id'),
-            shared_by=user.id
+            created_at=datetime.utcnow()
         )
         
-        db.session.add(resource)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Resource shared successfully!'
-        })
-        
+        try:
+            logging.info("Attempting to save resource to database...")
+            db.session.add(resource)
+            db.session.flush()
+            
+            filename = secure_filename(file.filename)
+            file_ext = os.path.splitext(filename)[1]
+            unique_filename = f"resource_{resource.id}{file_ext}"
+            
+            # Save to database directory
+            db_path = os.path.join(current_app.root_path, 'instance')
+            os.makedirs(db_path, exist_ok=True)
+            file_path = os.path.join(db_path, unique_filename)
+            file.save(file_path)
+            
+            resource.url = unique_filename
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Resource uploaded successfully!',
+                'resource': {
+                    'id': resource.id,
+                    'title': resource.title,
+                    'notes': resource.notes,
+                    'url': resource.url,
+                    'class_id': resource.class_id,
+                    'resource_type': resource.resource_type
+                }
+            })
+            
+        except Exception as db_error:
+            logging.error(f"Database error: {str(db_error)}")
+            db.session.rollback()
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise db_error
+            
     except Exception as e:
-        logging.error(f"Share resource error: {str(e)}")
-        return jsonify({
-            'error': 'Failed to upload resource',
-            'details': str(e)
-        }), 500
+        logging.error(f"Upload error: {str(e)}")
+        return jsonify({'error': 'Failed to upload resource', 'details': str(e)}), 500
 
 @resource_routes.route('/class/<int:class_id>/resources')
 @login_required
@@ -855,55 +896,101 @@ def class_resources(class_id):
 @login_required
 def upload_resource():
     try:
-        user = db.session.get(User, session['user_id'])
-
-        # Check file input exists
         if 'file' not in request.files:
-            logging.error('No file uploaded')
             return jsonify({'error': 'No file uploaded'}), 400
-
+            
         file = request.files['file']
         if file.filename == '':
-            logging.error('No file selected')
             return jsonify({'error': 'No file selected'}), 400
 
         if not allowed_file(file.filename):
-            logging.error('File type not allowed')
             return jsonify({'error': 'File type not allowed'}), 400
-
-        # Secure the filename and build the file path
-        filename = secure_filename(file.filename)
-        upload_folder = current_app.config.get('UPLOAD_FOLDER')
-        if not upload_folder:
-            logging.error('UPLOAD_FOLDER not configured')
-            return jsonify({'error': 'UPLOAD_FOLDER not configured'}), 500
-
-        os.makedirs(upload_folder, exist_ok=True)
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)
-
-        # Create CourseResource record 
+            
+        # Create database entry first
         resource = CourseResource(
             title=request.form.get('title'),
-            resource_type="general",  # default value; adjust as needed
-            notes=request.form.get('description'),  # ensure the form sends 'description'
-            url=f"/uploads/{filename}",  # Ensure this URL is correct
+            resource_type=request.form.get('resource_type'),
+            notes=request.form.get('notes'),
+            shared_by=session['user_id'],
             class_id=request.form.get('class_id'),
-            shared_by=user.id
+            created_at=datetime.utcnow()
         )
-
-        db.session.add(resource)
-        db.session.commit()
-
-        return jsonify({
-            'success': True,
-            'message': 'Resource uploaded successfully!'
-        })
-
+        
+        try:
+            # Add and flush to get the ID (but don't commit yet)
+            db.session.add(resource)
+            db.session.flush()
+            
+            # Now save the file with the resource ID in the filename
+            filename = secure_filename(file.filename)
+            file_ext = os.path.splitext(filename)[1]
+            unique_filename = f"resource_{resource.id}{file_ext}"
+            
+            # Save file to database directory
+            db_path = os.path.join(current_app.root_path, 'instance')
+            file_path = os.path.join(db_path, unique_filename)
+            file.save(file_path)
+            
+            # Update resource with file info and commit
+            resource.url = unique_filename
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Resource uploaded successfully!',
+                'resource': {
+                    'id': resource.id,
+                    'title': resource.title,
+                    'notes': resource.notes,
+                    'url': resource.url,
+                    'class_id': resource.class_id,
+                    'resource_type': resource.resource_type
+                }
+            })
+            
+        except Exception as db_error:
+            db.session.rollback()
+            raise db_error
+            
     except Exception as e:
-        db.session.rollback()
         logging.error(f"Upload error: {str(e)}")
         return jsonify({'error': 'Failed to upload resource', 'details': str(e)}), 500
+
+@resource_routes.route('/download/<int:resource_id>')
+@login_required
+def download_resource(resource_id):
+    try:
+        resource = CourseResource.query.get_or_404(resource_id)
+        
+        # Verify user has access to this resource's class
+        user = db.session.get(User, session['user_id'])
+        class_ = db.session.get(Class, resource.class_id)
+        if not class_ or user not in class_.students:
+            flash('Unauthorized access to resource', 'error')
+            return redirect(url_for('main.home'))
+        
+        if not resource.url:
+            flash('No file available for download', 'error')
+            return redirect(request.referrer or url_for('resources.resources'))
+            
+        file_path = os.path.join(current_app.root_path, 'instance', resource.url)
+        
+        if not os.path.exists(file_path):
+            flash('File not found', 'error')
+            return redirect(request.referrer or url_for('resources.resources'))
+            
+        original_filename = resource.url.replace(f"resource_{resource.id}", "")
+        
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=f"{resource.title}{original_filename}"
+        )
+            
+    except Exception as e:
+        logging.error(f"Download error: {str(e)}")
+        flash('Error downloading resource', 'error')
+        return redirect(request.referrer or url_for('resources.resources'))
 
 # --------------------------
 # Main Routes
@@ -944,21 +1031,26 @@ def home():
 def profile():
     user = db.session.get(User, session['user_id'])
     
-    if user is None:
-        flash('User not found. Please log in again.', 'danger')
-        return redirect(url_for('login'))
-
     if request.method == 'POST':
-        user.canvas_ical_url = request.form.get('canvas_ical_url', user.canvas_ical_url)
-        # You can add more fields here if needed
-        try:
-            db.session.commit()
-            flash('Profile updated successfully!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('An error occurred while updating your profile.', 'danger')
-            print(f"Error: {e}")  # For debugging
-            
+        canvas_ical_url = request.form.get('canvas_ical_url')
+        if canvas_ical_url:
+            user.canvas_ical_url = canvas_ical_url
+            try:
+                # Import Canvas data
+                courses_success = fetch_canvas_courses(canvas_ical_url, user)
+                events_success = fetch_canvas_events(canvas_ical_url, user)
+                
+                db.session.commit()
+                
+                if courses_success and events_success:
+                    flash('Canvas URL updated and data imported successfully!', 'success')
+                else:
+                    flash('Canvas URL updated but there was an issue importing some data.', 'warning')
+            except Exception as e:
+                db.session.rollback()
+                flash('Error updating Canvas URL. Please try again.', 'error')
+                logging.error(f"Canvas update error: {str(e)}")
+        
     return render_template('profile.html', user=user)
 
 @main_routes.route('/delete_account', methods=['POST'])
@@ -1134,8 +1226,7 @@ def join_study_group(group_id):
             return jsonify({'success': False, 'message': 'Group not found'}), 404
             
         if user in group.members:
-            return jsonify({'success': False, 'message': 'Already a member'}), 400
-            
+            return jsonify({'success': False, 'message': 'Already a member'}), 400            
         if len(group.members) >= group.max_members:
             return jsonify({'success': False, 'message': 'Group is full'}), 400
             
@@ -1206,11 +1297,72 @@ def mark_notifications_read():
     db.session.commit()
     return jsonify({'success': True})
 
-@class_routes.route('/manage')
+@class_routes.route('/manage', methods=['GET', 'POST'])
 @login_required
 def manage_classes():
-    user = db.session.get(User, session['user_id'])
-    return render_template('manage_classes.html', classes=user.classes)
+    try:
+        user = db.session.get(User, session['user_id'])
+        
+        if request.method == 'POST':
+            class_id = request.form.get('class_id')
+            action = request.form.get('action', 'archive')
+            
+            if class_id:
+                class_obj = Class.query.get(class_id)
+                if class_obj and class_obj in user.classes:
+                    if action == 'archive':
+                        class_obj.archived = True
+                        class_obj.archived_date = datetime.utcnow()
+                        flash('Class archived successfully!', 'success')
+                    elif action == 'restore':
+                        class_obj.archived = False
+                        class_obj.archived_date = None
+                        flash('Class restored successfully!', 'success')
+                    db.session.commit()
+        
+        active_classes = [c for c in user.classes if not c.archived]
+        archived_classes = [c for c in user.classes if c.archived]
+        
+        return render_template('manage_classes.html', 
+                             active_classes=active_classes,
+                             archived_classes=archived_classes)
+                             
+    except Exception as e:
+        logging.error(f"Error managing classes: {str(e)}")
+        flash('Error managing classes', 'error')
+        return redirect(url_for('main.home'))
+
+@class_routes.route('/add', methods=['GET', 'POST'])
+@login_required
+def add_class():
+    if request.method == 'POST':
+        class_name = request.form.get('class_name')
+        class_color = request.form.get('color', '#000000')
+        
+        if not class_name:
+            flash('Class name is required', 'error')
+            return redirect(url_for('classes.add_class'))
+            
+        try:
+            user = db.session.get(User, session['user_id'])
+            new_class = Class(
+                name=class_name,
+                color=class_color
+            )
+            db.session.add(new_class)
+            user.classes.append(new_class)
+            db.session.commit()
+            
+            flash('Class added successfully!', 'success')
+            return redirect(url_for('classes.manage'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error adding class: {str(e)}")
+            flash('Error adding class. Please try again.', 'error')
+            return redirect(url_for('classes.add_class'))
+            
+    return render_template('add_class.html')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx'}
 
@@ -1241,3 +1393,34 @@ def add_friend(friend_id):
     except Exception as e:
         logging.error(f"Error adding friend: {str(e)}")
         return jsonify({'success': False, 'message': 'Error adding friend'}), 500
+
+@class_routes.route('/classmates')
+@login_required
+def classmates():
+    user = db.session.get(User, session['user_id'])
+    # Only show active classes
+    active_classes = [c for c in user.classes if not c.archived]
+    
+    return render_template('classmates.html', 
+                         classes=active_classes)
+
+@class_routes.route('/archive/<int:class_id>', methods=['POST'])
+@login_required
+def archive_class(class_id):
+    try:
+        class_ = db.session.get(Class, class_id)
+        if not class_:
+            flash('Class not found', 'error')
+            return redirect(url_for('classes.manage'))
+            
+        class_.archived = True
+        class_.archived_date = datetime.utcnow()
+        db.session.commit()
+        
+        flash('Class archived successfully', 'success')
+        return redirect(url_for('classes.manage'))
+        
+    except Exception as e:
+        logging.error(f"Error archiving class: {str(e)}")
+        flash('Error archiving class', 'error')
+        return redirect(url_for('classes.manage'))
